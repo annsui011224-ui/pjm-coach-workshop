@@ -242,6 +242,21 @@ document.addEventListener("change", (e) => {
   }
 });
 
+// 破冰題：同一組看到同一題，任何人按「換一題」大家一起換
+function iceDone(st) {
+  const f = S.future.get(S.meId) || {}, g = me().seat2;
+  if (st === 2) return !!f.image_submitted;
+  if (st === 3) return !!((f.fill1 || "").trim() && (f.fill2 || "").trim() && (f.fill3 || "").trim());
+  if (st === 5) return !!g && !!note("seat", g, 5, "submitted");
+  return false;
+}
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#iceNext")) return;
+  const st = vs(), g = me().seat2; if (!g) return;
+  const n = parseInt(note("seat", g, st, "chat_n") || "0", 10) || 0;
+  saveNote(nkey("seat", g, st, "chat_n"), String(n + 1)); refresh();
+});
+
 function sync() {
   document.querySelectorAll("[data-n]").forEach((el) => { if (el === document.activeElement) return; const v = S.notes.get(el.dataset.n) ?? ""; if (el.value !== v) el.value = v; if (!lastSaved.has(el.dataset.n)) lastSaved.set(el.dataset.n, v); });
   document.querySelectorAll("[data-nr]").forEach((el) => { el.checked = S.notes.get(el.dataset.nr) === el.value; });
@@ -252,6 +267,7 @@ function refresh() {
   if (!me() || S.showCard) return;
   sync();
   applyLocks?.();
+  bonusRefresh?.();
   document.querySelectorAll("[data-dyn]").forEach((el) => { const f = DYN[el.dataset.dyn]; if (f) el.innerHTML = f(); });
 }
 
@@ -328,7 +344,7 @@ function v2() {
   <div class="card"><div class="q">你選的圖片</div><p class="hint">點圖片可以全螢幕放大，和組員分享你為什麼選這張。</p>
     <img class="bigpic" data-full="${esc(f.image_url)}" src="${esc(f.image_url)}" alt="">
     <p><button class="btn ghost" id="repick">重新選擇</button></p></div>
-  <p class="wait"><span class="dot"></span>請先和小組成員分享。Facilitator 會開啟下一步：寫給未來的自己。</p>`;
+  <p class="wait"><span class="dot"></span>請先和小組成員分享。Facilitator 會開啟下一步：寫給未來的自己。</p><div data-dyn="ice"></div>`;
   return ph(STAGE[2].title, "") + nameFixCard() + `
   <div class="card"><div class="q">請選一張圖片，${esc(pickLead(pjmNamesOf(S.roster, me().name)))}，對你的好處是什麼？</div>
     <p class="hint">點選圖片可以全螢幕放大。選好後按「送出」，再和小組成員分享你的選擇。</p>
@@ -390,6 +406,7 @@ function v3() {
     <p style="margin:6px 0">即使培育人才過程中會遇到種種挑戰，我仍願意</p><textarea data-fx="fill2" rows="2"></textarea>
     <p style="margin:6px 0">因為</p><textarea data-fx="fill3" rows="2"></textarea>
     <div class="saved" id="fSaved"></div></div>
+  <div data-dyn="ice"></div>
   <h2>${g ? `${esc(g)} 組的夥伴` : "小組夥伴"}</h2>
   <div data-dyn="gallery"></div>` + foot;
 }
@@ -397,7 +414,7 @@ function bind3() {
   bindNameFix();
   document.querySelectorAll("[data-fx]").forEach((el) => el.addEventListener("input", () => {
     const cur = S.future.get(S.meId) || { person_id: S.meId };
-    S.future.set(S.meId, { ...cur, [el.dataset.fx]: el.value }); saveFutureD();
+    S.future.set(S.meId, { ...cur, [el.dataset.fx]: el.value }); saveFutureD(); refresh();
   }));
 }
 
@@ -434,14 +451,14 @@ function v5() {
     <div class="q" style="margin-top:12px">剛才 KS 分享的經驗中，有沒有哪一個做法，即使我的資源有限，也有機會嘗試？</div>
     <p class="hint">同組夥伴看到的是同一份內容，可以一起補充。討論完請按「送出」，facilitator 會請各組輪流分享。</p>
     ${nf("seat", g, 5, "tryable", 7)}
-    <p class="row"><button class="btn" id="sendGroup">送出給 facilitator</button><span class="saved" id="sentMsg"></span></p></div>`
+    <p class="row"><button class="btn" id="sendGroup">送出給 facilitator</button><span class="saved" id="sentMsg"></span></p></div><div data-dyn="ice"></div>`
   : `<div class="card"><p class="wait" style="padding:6px"><span class="dot"></span>請依現場安排換位置，facilitator 設定好你的小組後，這裡會出現共編欄位。</p></div>`) + foot;
 }
 function bind5() {
   const b = document.getElementById("sendGroup"); if (!b) return;
   const g = me().seat2, k = nkey("seat", g, 5, "tryable");
   const m = document.getElementById("sentMsg");
-  const mark = () => { m.textContent = note("seat", g, 5, "submitted") ? "已送出 ✓（修改後可再按一次更新）" : ""; };
+  const mark = () => { m.textContent = note("seat", g, 5, "submitted") ? "已送出 ✓（修改後可再按一次更新）" : ""; refresh(); };
   mark();
   b.onclick = async () => {
     const t = document.querySelector("[data-n]"); await saveNote(k, t.value);
@@ -559,7 +576,7 @@ function v7() {
   <div class="card"><div class="q">④ 下一步要做什麼？</div><p class="hint">請選擇一個真實工作情境，並明確分工。</p>
     ${nf(...k("q4"), 3, "真實工作情境與下一步")}
     ${q4Fields(r).map((f) => `<div class="q4row"><div class="q4plants">${f.roles.map((rk) => sprigSvg(ROLES[rk].plant)).join("")}</div><div class="q4body"><p style="margin:2px 0 4px"><b>${esc(f.label)}</b>，要做</p>${nf(...k(f.key), 2)}</div></div>`).join("")}</div>
-  <div class="card"><div class="q">⑤ 預計何時執行？如何知道有進步？</div>${nf(...k("q5"), 3)}</div>` + foot;
+  <div class="card"><div class="q">⑤ 預計何時執行？如何知道有進步？</div>${nf(...k("q5"), 3)}</div>` + '<div id="bonusHost"></div>' + foot;
 }
 
 function v8() {
@@ -570,7 +587,7 @@ function v8() {
   ${F_QUESTIONS.filter((x) => !x.perCoach || (r.coach === me().name && myRoles().includes("coach"))).map((x, i) => `<div class="card"><div class="q">${i + 1}. ${esc(x.q)}</div>${x.perCoach && S.roster.filter((y) => y.row_id === r.row_id && y.id > 0).length > 1 ? `<p class="hint">${esc(r.coach)} 教練帶多位新手，這題只需回答一次，每位新手頁面的答案相同。</p>` : ""}${x.multi ? checks(...fLoc(x, r), x.opts) : radios(...fLoc(x, r), x.opts)}</div>`).join("")}
   <div class="card"><div class="q">補充說明（選填）</div>${nf(...k("fnote"), 3)}</div>
   <div class="card soft"><div class="q">送出 ${esc(rowPjm(r))} 的培育計畫</div><p class="hint">確認階段 7、8 都討論完了，再按送出。送出後，facilitator 會在大螢幕呈現全班培育計畫的概況。</p>
-    <p class="row"><button class="btn" id="sendPlan">送出培育計畫</button><span class="saved" id="planMsg"></span></p></div>` + foot;
+    <p class="row"><button class="btn" id="sendPlan">送出培育計畫</button><span class="saved" id="planMsg"></span></p></div>` + '<div id="bonusHost"></div>' + foot;
 }
 function bind8() {
   const b = document.getElementById("sendPlan"); if (!b) return;
@@ -670,6 +687,11 @@ function bind12() {
 }
 
 const DYN = {
+  ice() {
+    const st = vs(), g = me().seat2; if (!g || !iceDone(st)) return "";
+    const n = parseInt(note("seat", g, st, "chat_n") || "0", 10) || 0, q = iceQuestion(g, st, n);
+    return '<div class="card soft ice"><div class="row" style="justify-content:space-between"><span class="pill warn">等其他組的時候，一起聊聊</span>' + (q.kind === "task" ? '<span class="pill">小任務</span>' : "") + '</div><div class="ice-q">' + esc(q.text.replace("【小任務】", "")) + '</div><p class="row" style="margin:6px 0 0"><button class="btn ghost" id="iceNext">換一題</button><span class="hint">同組夥伴的畫面會一起換題</span></p></div>';
+  },
   gallery() {
     const g = me().seat2;
     const mem = S.people.filter((p) => p.id !== S.meId && g && p.seat2 === g);

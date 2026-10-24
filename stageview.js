@@ -134,6 +134,20 @@ function projPrep() {
     '<p class="p-sub">午餐飲食：' + (Object.entries(diets).map(([k, v]) => esc(k) + " × " + v).join("　") || "尚無資料") + "</p>";
 }
 
+// 有人先完成時，投影畫面下方輪播破冰題（跨產品小組階段）或提示加分挑戰（培育小組階段）
+function projWait(id) {
+  let done = 0;
+  if (id === 2) done = attendees().filter((p) => D.future.find((f) => f.person_id === p.id && f.image_submitted)).length;
+  else if (id === 3) done = attendees().filter((p) => D.future.find((f) => f.person_id === p.id && f.fill1)).length;
+  else if (id === 5) done = seatGroups().filter(({ g }) => nv("seat", g, 5, "submitted")).length;
+  else if (id === 7) done = D.roster.filter((r) => r.id > 0 && ["q1", "q2", "q3", "q4", "q5"].every((x) => nv("row", String(r.id), 7, x))).length;
+  else if (id === 8) done = D.roster.filter((r) => r.id > 0 && nv("row", String(r.id), 8, "submitted")).length;
+  if (!done) return "";
+  if (id === 7 || id === 8) return '<div class="p-card p-wait"><div class="p-ctitle"><span>🌿 加分挑戰開放中</span></div><div class="p-note">先完成的小組可以挑一個玩玩看：給新手的一句話・預想障礙・預演第一句話・看看其他組・默契小問答</div></div>';
+  const q = iceRotating(Math.floor(Date.now() / 20000)).replace("【小任務】", "小任務：");
+  return '<div class="p-card p-wait"><div class="p-ctitle"><span>等其他組的時候，一起聊聊</span></div><div class="p-q" style="font-family:var(--serif);font-weight:700">' + esc(q) + "</div></div>";
+}
+
 const PROJ = { 13: projPrep, 0: projArrival, 1: projPurpose, 2: projPickImage, 3: projLetter, 4: projKS, 5: projDiscuss, 11: projTeamSeating, 6: projInventory, 7: projAlign, 8: projFeasible, 9: projEnergize, 10: projTakeaway, 12: projSurvey };
 
 // ---------- 階段控制頁 ----------
@@ -184,7 +198,7 @@ async function paintStage() {
   const nav = document.getElementById("navLabel"); if (nav) nav.textContent = `${cur}／${STAGES.length - 1}　${STAGE[D.stage].title}`;
   const pv = document.getElementById("navPrev"), nx = document.getElementById("navNext"); if (pv) pv.disabled = cur <= 0; if (nx) nx.disabled = cur >= STAGES.length - 1;
   if (D.stage === 12) { try { const { data } = await sb.rpc("pjm_admin_survey", { p: PASS }); surveyRows = data || []; } catch { surveyRows = surveyRows || []; } }
-  const html = (PROJ[D.stage] || (() => ""))(), art = ART[D.stage] ? ART[D.stage]() : "";
+  const html = (PROJ[D.stage] || (() => ""))() + projWait(D.stage), art = ART[D.stage] ? ART[D.stage]() : "";
   body.innerHTML = art ? '<div class="p-split"><div class="p-main">' + html + '</div><div class="p-art">' + art + "</div></div>" : html;
   body.querySelectorAll("[data-act]").forEach((b) => (b.onclick = () => {
     const n = shareGroups().length; if (b.dataset.act === "share") project(0); else project(n);

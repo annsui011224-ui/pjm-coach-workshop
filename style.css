@@ -200,3 +200,7 @@ textarea.locked { background: var(--warn); opacity: .85; cursor: not-allowed; }
 .q4plants .sprig { width: 60px; height: 72px; margin: 0; }
 .q4body { flex: 1; min-width: 0; }
 @media (max-width: 480px) { .q4plants { flex-basis: 48px; } .q4plants .sprig { width: 46px; height: 56px; } }
+
+.ice { text-align: center; }
+.ice-q { font-family: var(--serif); font-weight: 700; font-size: 22px; line-height: 1.5; margin: 12px 4px; }
+.ice .row { justify-content: center; }
