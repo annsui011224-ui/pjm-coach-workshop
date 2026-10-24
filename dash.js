@@ -51,7 +51,7 @@ function pDash() {
   document.getElementById("dashProj").onclick = () => {
     document.getElementById("projLayer")?.remove();
     const o = document.createElement("div"); o.id = "projLayer";
-    o.style.cssText = "position:fixed;inset:0;z-index:60;background:var(--bg);color:var(--ink);overflow:auto;padding:3vh 5vw";
+    o.style.cssText = "position:fixed;inset:0;z-index:90;background:var(--bg);color:var(--ink);overflow:auto;padding:3vh 5vw";
     const paint = () => {
       o.innerHTML = `<div class="row" style="justify-content:space-between"><h1 style="margin:0">全班培育計畫概況</h1><button class="btn" id="pClose">結束</button></div>` + dashHtml(dashStats(D.roster, nv, dashDraft), true);
       o.querySelector("#pClose").onclick = close;
@@ -59,6 +59,6 @@ function pDash() {
     const timer = setInterval(paint, 5000);
     const close = () => { clearInterval(timer); o.remove(); document.removeEventListener("keydown", key); };
     const key = (e) => { if (e.key === "Escape") close(); };
-    document.addEventListener("keydown", key); document.body.appendChild(o); paint();
+    document.addEventListener("keydown", key); (document.fullscreenElement || document.body).appendChild(o); paint();
   };
 }

@@ -1,7 +1,7 @@
 // Facilitator 後台
 let PASS = null, D = null, tab = "stage";
 const $app = document.getElementById("app");
-const toast = (t) => { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3000); };
+const toast = (t) => { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; (document.fullscreenElement || document.body).appendChild(d); setTimeout(() => d.remove(), 3000); };
 const rpc = async (fn, args) => { const { data, error } = await sb.rpc(fn, { p: PASS, ...args }); if (error) { toast("失敗：" + error.message); throw error; } return data; };
 
 async function start() {
@@ -148,7 +148,7 @@ function project(i) {
   const isCloud = i === gs.length, x = gs[i];
   document.getElementById("projLayer")?.remove();
   const o = document.createElement("div"); o.id = "projLayer";
-  o.style.cssText = "position:fixed;inset:0;z-index:60;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;padding:4vh 6vw;overflow:auto";
+  o.style.cssText = "position:fixed;inset:0;z-index:90;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;padding:4vh 6vw;overflow:auto";
   const nav = `<div class="row"><button class="btn ghost" id="pPrev">← 上一頁</button><span class="hint">${i + 1}／${total}</span><button class="btn ghost" id="pNext">下一頁 →</button><button class="btn" id="pClose">結束</button></div>`;
   if (isCloud) {
     o.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><span class="pill" style="font-size:20px">全班答案文字雲</span> <span class="hint" style="font-size:16px">點一下字可以隱藏；字越大代表被提到越多次</span></div>${nav}</div>
@@ -159,7 +159,7 @@ function project(i) {
       <p class="hint" style="font-size:22px;margin:3vh 0 2vh">剛才 KS 分享的經驗中，有沒有哪一個做法，即使我的資源有限，也有機會嘗試？</p>
       <div style="font-size:clamp(26px,3.6vw,52px);line-height:1.5;white-space:pre-wrap;font-weight:600">${x.text ? esc(x.text) : '<span class="hint">（尚無內容）</span>'}</div>`;
   }
-  document.body.appendChild(o);
+  (document.fullscreenElement || document.body).appendChild(o);
   if (isCloud) drawCloud(o.querySelector("#cloudHost"), gs.map((g) => g.text).filter(Boolean));
   const close = () => { o.remove(); document.removeEventListener("keydown", key); };
   const key = (e) => { if (e.key === "ArrowRight") { close(); project(i + 1); } else if (e.key === "ArrowLeft") { close(); project(i - 1); } else if (e.key === "Escape") close(); };
