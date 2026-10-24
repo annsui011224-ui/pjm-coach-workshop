@@ -119,8 +119,12 @@ function projTakeaway() {
 function projSurvey() {
   const rows = surveyRows || [], n = rows.length, all = attendees().length;
   const avg = (k) => (n ? (rows.reduce((a, r) => a + (r.answers[k] || 0), 0) / n).toFixed(1) : "—");
+  const gains = rows.map((r) => (r.answers.gain || "").trim()).filter(Boolean).length;
+  // 左：四個評分題（每題一列、不斷行）；右：「今天最有收穫的是什麼？」的文字雲
+  const left = SURVEY_Q.filter((q) => q.type === "rating").map((q) => '<div class="p-svrow"><span class="p-svq">' + esc(q.q) + '</span><span class="p-score">' + avg(q.k) + "<small> / 5</small></span></div>").join("");
+  const right = '<div class="p-card p-svcloud"><div class="p-ctitle"><span>今天最有收穫的是什麼？</span><span class="p-count">' + gains + ' 則回答</span></div><div id="svCloud" class="p-cloud"></div></div>';
   return pH1("工作坊滿意度問卷") + pLead("請在電腦上填寫問卷（約 2 分鐘，匿名）。") + pBar(n, all, "已填寫") +
-    `<div class="p-grid">${SURVEY_Q.filter((q) => q.type === "rating").map((q) => `<div class="p-card"><div class="p-qs">${esc(q.q)}</div><div class="p-score">${avg(q.k)}<small> / 5</small></div></div>`).join("")}</div>`;
+    '<div class="p-survey"><div class="p-svL">' + left + '</div><div class="p-svR">' + right + "</div></div>";
 }
 
 function projPrep() {
@@ -204,6 +208,11 @@ async function paintStage() {
     const n = shareGroups().length; if (b.dataset.act === "share") project(0); else project(n);
   }));
   fitProjection();
+  // 問卷頁：在版面定案後才畫文字雲（它需要量容器的實際大小）
+  if (D.stage === 12) {
+    const el = document.getElementById("svCloud");
+    if (el) drawCloud(el, (surveyRows || []).map((r) => (r.answers.gain || "").trim()).filter(Boolean));
+  }
 }
 
 // 全螢幕時：自動縮放內容，讓整個階段的資訊同時顯示在一頁，不需要上下捲動
