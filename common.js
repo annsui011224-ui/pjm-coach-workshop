@@ -213,77 +213,92 @@ const fLoc = (q, r) => (q.perCoach ? ["coach", String(r.row_id), 8, q.f] : ["row
 // PDF 內頁配圖用：已逐張檢視，畫面中沒有清楚的人臉或動物臉（封面不受此限制）
 const INTERIOR_IMAGES = ["images/p985628.jpg","images/p36958408.jpg","images/p33414459.jpg","images/p1792626.jpg","images/p9696711.jpg","images/p11948604.jpg","images/p14978029.jpg","images/p18994151.jpg","images/p38652687.jpg","images/p6114013.jpg","images/p33225977.jpg","images/p9606482.jpg","images/p19984101.jpg","images/p13185335.jpg","images/p20040806.jpg","images/p1609512.jpg","images/p39739424.jpg","images/p32017425.jpg","images/p13625479.jpg","images/p37368470.jpg","images/p18748163.jpg","images/p4715645.jpg","images/p12815097.jpg","images/p35526447.jpg","images/p9606891.jpg","images/p6147381.jpg","images/p12585936.jpg","images/p31679274.jpg","images/p5549239.jpg","images/p33927801.jpg","images/p338504.jpg","images/p3763830.jpg","images/p8606805.jpg","images/p22608567.jpg","images/p8301408.jpg","images/p39977067.jpg","images/p29709894.jpg","images/p5220093.jpg","images/p39999216.jpg"];
 
-// 原創植物插圖：每個角色一種（蕨類、龜背芋、竹子、橄欖枝、山茶花），柔和綠色，亮暗主題都適用
+// 角色顏色：每種角色的植物有明顯不同的主色調，座位表上也用同一個顏色框住姓名
+const ROLE_COLOR = { coach: "#3f9a62", pjm_mgr: "#3b7fc4", direct_mgr: "#e0a020", dept_mgr: "#8a63c9", guest: "#e0678d" };
+const ROLE_PRIO = ["guest", "coach", "pjm_mgr", "direct_mgr", "dept_mgr"];
+const primaryOf = (roles) => ROLE_PRIO.find((r) => roles.includes(r)) || roles[0];
+// 姓名框：外框用主要角色的顏色，其他角色用小圓點標示；on = 已就緒／已入座
+function roleChip(text, roles, on, small) {
+  const p = primaryOf(roles), c = ROLE_COLOR[p] || "#888";
+  const dots = roles.filter((r) => r !== p).map((r) => '<i class="rdot" style="background:' + (ROLE_COLOR[r] || "#888") + '"></i>').join("");
+  return '<span class="p-chip rc ' + (on ? "on" : "") + (small ? " sm" : "") + '" style="--rc:' + c + '">' + (on ? "✓ " : "") + esc(text) + dots + "</span>";
+}
+// 某人在某一列（某個培育小組）裡扮演的角色
+function rowRolesOf(r, name) {
+  return [["coach", r.coach], ["pjm_mgr", r.pjm_mgr], ["direct_mgr", r.direct_mgr], ["dept_mgr", r.dept_mgr]].filter(([, n]) => n === name).map(([k]) => k);
+}
+
+// 原創植物插圖：每個角色一種，主色調各不相同（綠、藍、金黃、紫、粉紅）
 function sprigSvg(kind) {
   const f = (n) => n.toFixed(1);
-  const wrap = (label, inner) => '<svg class="sprig" viewBox="0 0 200 240" role="img" aria-label="' + label + '">' + inner + "</svg>";
-  const stem = (d, w) => '<path d="' + d + '" stroke="#4a5d51" stroke-width="' + (w || 2.2) + '" fill="none" stroke-linecap="round"/>';
+  const glowOf = { fern: ROLE_COLOR.coach, monstera: ROLE_COLOR.pjm_mgr, bamboo: ROLE_COLOR.direct_mgr, olive: ROLE_COLOR.dept_mgr, camellia: ROLE_COLOR.guest };
+  const wrap = (label, inner) => '<svg class="sprig" style="--glow:' + (glowOf[kind] || "#8fb99a") + '" viewBox="0 0 200 240" role="img" aria-label="' + label + '">' + inner + "</svg>";
+  const stem = (d, w, col) => '<path d="' + d + '" stroke="' + (col || "#4a5d51") + '" stroke-width="' + (w || 2.2) + '" fill="none" stroke-linecap="round"/>';
 
   if (kind === "monstera") {
-    // 龜背芋：一片大葉守護著
-    const leaf = '<path d="M100 214 C40 190 22 120 52 70 C70 40 100 34 100 34 C100 34 130 40 148 70 C178 120 160 190 100 214Z" fill="#6d9c7e"/>';
-    const lobes = '<path d="M100 40 C99 90 100 150 100 212" stroke="#4a5d51" stroke-width="2" fill="none"/>';
+    // 龜背芋（藍）：一片大葉守護著
+    const leaf = '<path d="M100 214 C40 190 22 120 52 70 C70 40 100 34 100 34 C100 34 130 40 148 70 C178 120 160 190 100 214Z" fill="#3b7fc4"/>';
+    const shade = '<path d="M100 214 C160 190 178 120 148 70 C130 40 100 34 100 34 C100 90 100 150 100 214Z" fill="#2f69a8" opacity="0.55"/>';
+    const lobes = '<path d="M100 40 C99 90 100 150 100 212" stroke="#1d4a7a" stroke-width="2" fill="none"/>';
     const slits = [[-1, 84], [-1, 118], [-1, 152], [1, 84], [1, 118], [1, 152]].map(([s, y]) =>
-      '<path d="M100 ' + (y + 6) + " C" + (100 + s * 20) + " " + (y + 2) + " " + (100 + s * 40) + " " + (y - 8) + " " + (100 + s * 52) + ' ' + (y - 22) + '" stroke="#4a5d51" stroke-width="1.6" fill="none"/>').join("");
-    const small = '<path d="M60 236 C70 210 86 204 100 214" stroke="#4a5d51" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M52 232 C34 224 30 206 40 196 C54 202 58 218 52 232Z" fill="#9cc4a2"/>';
-    return wrap("龜背芋插圖", leaf + lobes + slits + small);
+      '<path d="M100 ' + (y + 6) + " C" + (100 + s * 20) + " " + (y + 2) + " " + (100 + s * 40) + " " + (y - 8) + " " + (100 + s * 52) + " " + (y - 22) + '" stroke="#1d4a7a" stroke-width="1.6" fill="none"/>').join("");
+    const small = '<path d="M60 236 C70 210 86 204 100 214" stroke="#1d4a7a" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M52 232 C34 224 30 206 40 196 C54 202 58 218 52 232Z" fill="#79b0e3"/>';
+    return wrap("龜背芋插圖", leaf + shade + lobes + slits + small);
   }
 
   if (kind === "bamboo") {
-    // 竹子：向上生長、節節高升
-    const stalks = [[70, 236, 62, 60, "#7fae8d"], [100, 236, 104, 22, "#6d9c7e"], [132, 236, 142, 76, "#9cc4a2"]];
+    // 金竹（金黃）：向上生長、節節高升
+    const stalks = [[70, 236, 62, 60, "#e8b230"], [100, 236, 104, 22, "#d99a14"], [132, 236, 142, 76, "#f2c85a"]];
     let g = "";
     stalks.forEach(([x, y0, x1, y1, col]) => {
       g += '<path d="M' + x + " " + y0 + " L" + x1 + " " + y1 + '" stroke="' + col + '" stroke-width="9" stroke-linecap="round" fill="none"/>';
       for (let t = 0.12; t < 0.98; t += 0.17) {
         const px = x + (x1 - x) * t, py = y0 + (y1 - y0) * t;
-        g += '<path d="M' + f(px - 6) + " " + f(py) + " L" + f(px + 6) + " " + f(py) + '" stroke="#4a5d51" stroke-width="2" stroke-linecap="round"/>';
+        g += '<path d="M' + f(px - 6) + " " + f(py) + " L" + f(px + 6) + " " + f(py) + '" stroke="#8a5a00" stroke-width="2" stroke-linecap="round"/>';
       }
       for (const [dx, dy, rot] of [[-2, 24, -62], [2, 40, 58], [-2, 62, -50]]) {
         g += '<path transform="translate(' + f(x1 + dx) + " " + f(y1 + dy) + ") rotate(" + rot + ')" d="M0,0 C8,-5 26,-6 36,0 C26,6 8,5 0,0Z" fill="' + col + '"/>';
       }
     });
-    return wrap("竹子插圖", g);
+    return wrap("金竹插圖", g);
   }
 
   if (kind === "olive") {
-    // 橄欖枝：穩定、和諧
-    let g = stem("M30 214 C70 190 120 150 176 70", 2.4);
+    // 橄欖枝（紫）：穩定、和諧
+    let g = stem("M30 214 C70 190 120 150 176 70", 2.4, "#4a3470");
     for (let k = 0; k < 11; k++) {
       const t = (k + 1) / 12, x = 30 + (176 - 30) * t, y = 214 - (214 - 70) * Math.pow(t, 0.95);
       [[-1, 62], [1, -62]].forEach(([s, rot], j) => {
-        g += '<path transform="translate(' + f(x) + " " + f(y) + ") rotate(" + (rot - 30 + (k % 2 ? 8 : -6)) + ') scale(' + f(1.3 - t * 0.35) + ')" d="M0,0 C-5,-8 -4,-26 0,-34 C4,-26 5,-8 0,0Z" fill="' + (j ? "#9cb89a" : "#7fa088") + '"/>';
+        g += '<path transform="translate(' + f(x) + " " + f(y) + ") rotate(" + (rot - 30 + (k % 2 ? 8 : -6)) + ") scale(" + f(1.3 - t * 0.35) + ')" d="M0,0 C-5,-8 -4,-26 0,-34 C4,-26 5,-8 0,0Z" fill="' + (j ? "#a98be0" : "#7d55c0") + '"/>';
       });
     }
-    g += '<ellipse cx="96" cy="170" rx="7" ry="9" fill="#5b4a6a"/><ellipse cx="124" cy="140" rx="7" ry="9" fill="#6b5a7a"/><ellipse cx="80" cy="190" rx="6" ry="8" fill="#5b4a6a"/>';
+    g += '<ellipse cx="96" cy="170" rx="7" ry="9" fill="#3a2563"/><ellipse cx="124" cy="140" rx="7" ry="9" fill="#4a3280"/><ellipse cx="80" cy="190" rx="6" ry="8" fill="#3a2563"/>';
     return wrap("橄欖枝插圖", g);
   }
 
   if (kind === "camellia") {
-    // 山茶花：歡迎貴賓
-    let g = stem("M100 236 C98 200 102 170 100 140", 2.6);
-    g += '<path d="M99 206 C70 206 52 190 50 170 C74 170 94 182 99 206Z" fill="#6d9c7e"/><path d="M101 190 C128 188 148 174 150 154 C126 156 106 168 101 190Z" fill="#7fae8d"/>';
-    const cols = ["#f1d5cf", "#ecc4bc", "#f6e2dc"];
-    for (let k = 0; k < 7; k++) {
-      g += '<ellipse transform="translate(100 96) rotate(' + k * (360 / 7) + ')" cx="0" cy="-34" rx="19" ry="31" fill="' + cols[k % 3] + '" stroke="#d7a79d" stroke-width="1"/>';
-    }
-    for (let k = 0; k < 5; k++) g += '<ellipse transform="translate(100 96) rotate(' + (k * 72 + 20) + ')" cx="0" cy="-15" rx="10" ry="17" fill="#f8ebe6"/>';
-    for (let k = 0; k < 14; k++) { const a = (k / 14) * Math.PI * 2; g += '<circle cx="' + f(100 + Math.cos(a) * 9 * (0.5 + (k % 3) / 3)) + '" cy="' + f(96 + Math.sin(a) * 9 * (0.5 + (k % 3) / 3)) + '" r="2.4" fill="#e6c35c"/>'; }
+    // 山茶花（粉紅）：歡迎貴賓
+    let g = stem("M100 236 C98 200 102 170 100 140", 2.6, "#3d6b4a");
+    g += '<path d="M99 206 C70 206 52 190 50 170 C74 170 94 182 99 206Z" fill="#4f9d69"/><path d="M101 190 C128 188 148 174 150 154 C126 156 106 168 101 190Z" fill="#62b07c"/>';
+    const cols = ["#f4a3bf", "#ec7fa5", "#f8c2d4"];
+    for (let k = 0; k < 7; k++) g += '<ellipse transform="translate(100 96) rotate(' + k * (360 / 7) + ')" cx="0" cy="-34" rx="19" ry="31" fill="' + cols[k % 3] + '" stroke="#c24a76" stroke-width="1"/>';
+    for (let k = 0; k < 5; k++) g += '<ellipse transform="translate(100 96) rotate(' + (k * 72 + 20) + ')" cx="0" cy="-15" rx="10" ry="17" fill="#fbd9e5"/>';
+    for (let k = 0; k < 14; k++) { const a = (k / 14) * Math.PI * 2; g += '<circle cx="' + f(100 + Math.cos(a) * 9 * (0.5 + (k % 3) / 3)) + '" cy="' + f(96 + Math.sin(a) * 9 * (0.5 + (k % 3) / 3)) + '" r="2.4" fill="#f2c94c"/>'; }
     return wrap("山茶花插圖", g);
   }
 
-  // 預設：蕨類小枝（引路教練與一般頁面）
-  const cols = ["#7fae8d", "#9cc4a2", "#b6d6b0", "#6d9c7e"];
+  // 預設：蕨類小枝（綠）— 引路教練與一般頁面
+  const cols = ["#4f9d69", "#6db985", "#9bd3a9", "#3a8657"];
   let leaves = "";
   for (let k = 0; k < 15; k++) {
     const t = k / 14, x = 100 + 24 * Math.sin(t * 2.6) - 6 * t, y = 222 - t * 190, s = 1.25 - t * 0.55;
     [[-1, 48], [1, -48]].forEach(([side, rot], j) => {
       const a = rot + (k % 2 ? 8 : -6);
-      leaves += '<path transform="translate(' + f(x + side * 3) + " " + f(y) + ") rotate(" + a + ") scale(" + s.toFixed(2) + ')" d="M0,0 C-8,-7 -10,-19 0,-23 C10,-19 8,-7 0,0Z" fill="' + cols[(k + j) % 4] + '" opacity="0.92"/>';
+      leaves += '<path transform="translate(' + f(x + side * 3) + " " + f(y) + ") rotate(" + a + ") scale(" + s.toFixed(2) + ')" d="M0,0 C-8,-7 -10,-19 0,-23 C10,-19 8,-7 0,0Z" fill="' + cols[(k + j) % 4] + '" opacity="0.95"/>';
     });
   }
-  leaves += '<path transform="translate(' + f(100 + 24 * Math.sin(2.6) - 6) + ' 30) rotate(8) scale(0.8)" d="M0,0 C-8,-7 -10,-19 0,-23 C10,-19 8,-7 0,0Z" fill="#9cc4a2"/>';
-  return wrap("蕨類小枝插圖", stem("M100 236 C108 190 118 120 120 30", 2.2) + leaves);
+  leaves += '<path transform="translate(' + f(100 + 24 * Math.sin(2.6) - 6) + ' 30) rotate(8) scale(0.8)" d="M0,0 C-8,-7 -10,-19 0,-23 C10,-19 8,-7 0,0Z" fill="#9bd3a9"/>';
+  return wrap("蕨類小枝插圖", stem("M100 236 C108 190 118 120 120 30", 2.2, "#2f5d42") + leaves);
 }
 
 // 「選圖」與「寫給未來的自己」的句首：有負責培育的新手就帶入名字；沒有（例如重要嘉賓）統一用「所有的 PJM」

@@ -6,7 +6,8 @@ const roleOrder = ["coach", "pjm_mgr", "direct_mgr", "dept_mgr"];
 const unitOf = (name) => (D.people.find((p) => p.name === name) || {}).unit || "";
 
 function chipHtml(p) {
-  return `<span class="pill" style="margin:2px;${p.absent ? "text-decoration:line-through;opacity:.6" : ""}">${esc(p.name)}${p.unit ? ` · ${esc(p.unit)}` : " · 嘉賓"}</span>`;
+  const roles = (regOf(p.id) || {}).roles || p.roles;
+  return `<span style="${p.absent ? "text-decoration:line-through;opacity:.6" : ""}">${roleChip(p.name + (p.unit ? " · " + p.unit : " · 嘉賓"), roles, false, true)}</span>`;
 }
 
 function seatBoard(field, title) {

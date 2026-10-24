@@ -29,7 +29,7 @@ function projArrival() {
   const right = '<p class="p-lead p-intro">跟你的小組夥伴介紹你的角色卡</p>' + plantsBand();
   const cards = gs.map(({ g, members }) => {
     const n = members.filter((p) => readyOf(p.id)).length;
-    return '<div class="p-card"><div class="p-ctitle"><span>' + esc(g) + ' 組</span><span class="p-count ' + (n === members.length ? "full" : "") + '">' + n + "／" + members.length + "</span></div>" + members.map((p) => chip(p.name, readyOf(p.id))).join("") + "</div>";
+    return '<div class="p-card"><div class="p-ctitle"><span>' + esc(g) + ' 組</span><span class="p-count ' + (n === members.length ? "full" : "") + '">' + n + "／" + members.length + "</span></div>" + members.map((p) => roleChip(p.name, (regOf(p.id) || {}).roles || p.roles, readyOf(p.id))).join("") + "</div>";
   }).join("");
   return '<div class="p-head"><div class="p-headL">' + left + '</div><div class="p-headR">' + right + "</div></div>" + '<div class="p-grid">' + cards + "</div>";
 }
@@ -79,7 +79,7 @@ function projTeamSeating() {
   const left = pH1("回到你的培育小組") + pLead("請看新的座位安排，移動到你的培育小組入座。") + pBar(seated, need.size, "已入座");
   const units = teamsByUnit().map(({ u, teams: ts }) => '<section class="p-unit"><h2 class="p-h2">' + esc(u) + '</h2><div class="p-ucards">' + ts.map((r) =>
     '<div class="p-card"><div class="p-ctitle"><span>' + esc(rowPjm(r)) + " 的小組</span></div>" +
-    rowPeople(r).map((n) => { const p = people(n); return chip(n + (p && p.absent ? "（請假）" : ""), p && seatedOf(p.id)); }).join("") + "</div>").join("") + "</div></section>").join("");
+    rowPeople(r).map((n) => { const p = people(n); return roleChip(n + (p && p.absent ? "（請假）" : ""), rowRolesOf(r, n), !!(p && seatedOf(p.id))); }).join("") + "</div>").join("") + "</div></section>").join("");
   return '<div class="p-head"><div class="p-headL">' + left + '</div><div class="p-headR">' + plantsBand() + "</div></div>" + '<div class="p-units">' + units + "</div>";
 }
 

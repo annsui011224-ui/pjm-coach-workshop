@@ -72,8 +72,8 @@ function artBackpack() {
 
 // 五種角色植物並排（附角色稱號）
 function plantsBand() {
-  const items = [["fern", "引路教練"], ["monstera", "新手守護者"], ["bamboo", "資源推手（直接）"], ["olive", "資源推手（部級）"], ["camellia", "重要嘉賓"]];
-  return '<div class="p-plants">' + items.map(([k, t]) => '<figure>' + sprigSvg(k) + "<figcaption>" + t + "</figcaption></figure>").join("") + "</div>";
+  const items = [["fern", "引路教練", "coach"], ["monstera", "新手守護者", "pjm_mgr"], ["bamboo", "資源推手（直接）", "direct_mgr"], ["olive", "資源推手（部級）", "dept_mgr"], ["camellia", "重要嘉賓", "guest"]];
+  return '<div class="p-plants">' + items.map(([k, t, r]) => '<figure>' + sprigSvg(k) + '<figcaption style="color:' + ROLE_COLOR[r] + '">' + t + "</figcaption></figure>").join("") + "</div>";
 }
 
 const ART = { 1: artCrack, 2: artCursor, 3: artPlane, 4: artSeedling, 5: artCrack, 6: artSeedling, 7: artLeaves, 8: artTree, 10: artBackpack };
