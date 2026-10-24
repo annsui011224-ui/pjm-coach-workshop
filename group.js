@@ -13,16 +13,14 @@ function relatedPairs(rows) {
   return s;
 }
 
-// 依出席人數決定組數：每組 4–6 人，平均盡量接近 5 人
+// 依出席人數決定組數：用最少的組數，每組不超過 6 人（每組 4–6 人）。
+// TEAM_CAP 是後台設定的組數上限；上限比需要的還小時以上限為準（每組會超過 6 人）。
+let TEAM_CAP = null;
 function groupSizes(n, min = 4, max = 6) {
   if (n <= 0) return [];
   if (n < min) return [n];
-  let best = null;
-  for (let k = Math.ceil(n / max); k <= Math.floor(n / min); k++) {
-    const score = Math.abs(n / k - 5);
-    if (!best || score < best.score) best = { k, score };
-  }
-  const k = best ? best.k : Math.ceil(n / max);
+  let k = Math.ceil(n / max);
+  if (typeof TEAM_CAP === "number" && TEAM_CAP > 0 && k > TEAM_CAP) k = TEAM_CAP;
   const base = Math.floor(n / k), extra = n % k;
   return Array.from({ length: k }, (_, i) => base + (i < extra ? 1 : 0));
 }

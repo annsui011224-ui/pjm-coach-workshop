@@ -2,6 +2,7 @@
 // 依賴 admin.js 的 D、PASS、tab、rpc、toast、load、draw、nv，以及 group.js
 
 let seatAutoTried = false;
+try { const c = parseInt(localStorage.getItem("pjm_team_cap") || "", 10); TEAM_CAP = c > 0 ? c : null; } catch {}
 const roleOrder = ["coach", "pjm_mgr", "direct_mgr", "dept_mgr"];
 const unitOf = (name) => (D.people.find((p) => p.name === name) || {}).unit || "";
 
@@ -58,6 +59,7 @@ async function pSeat() {
       <td><input type="text" style="max-width:110px" data-seat="2" data-id="${p.id}" value="${esc(p.seat2 || "")}"></td></tr>`).join("");
   pane.innerHTML = `
   <div class="card soft"><b>預計出席 ${attendN} 人 → 分成 ${sizes.length} 組（每組 ${sizes.length ? Math.min(...sizes) + "–" + Math.max(...sizes) : 0} 人）</b>
+    <p class="row hint" style="margin:6px 0">組數上限：<input type="number" id="teamCap" min="1" max="12" value="${TEAM_CAP || ""}" placeholder="自動" style="width:84px"> 組　<span>留空＝自動（用最少的組數，每組不超過 6 人）</span></p>
     <p class="hint" style="margin:4px 0 0">從「預約報到」到「小組討論」都使用這一份跨產品分組：同一列名單的人（教練與其 PJM 主管、直接主管、部級主管）不會同組，並盡量讓同組的人來自不同單位。「回到你的培育小組」之後改為培育小組（見「培育小組」分頁）。</p></div>
   <div class="card"><h3>誰請假？</h3><p class="hint">勾選請假的人，再按下方「重新隨機分組」，系統會依實際出席人數重新分配。</p>${absentHtml}</div>
   <div class="row" style="margin:10px 0"><button class="btn" id="regroup">🎲 重新隨機分組</button>${D.people.some(isSeated) ? '<button class="btn ghost" id="regroupAll">全部重新分組（包含已入座的人）</button><span class="hint">已入座 ' + D.people.filter(isSeated).length + " 人，按左邊的按鈕不會動到他們" + "</span>" : ""}</div>
@@ -70,6 +72,11 @@ async function pSeat() {
   pane.querySelectorAll("[data-absent]").forEach((c) => (c.onchange = async () => {
     await rpc("pjm_admin_set_absent", { pid: +c.dataset.absent, flag: c.checked }); await load(true); pSeat();
   }));
+  document.getElementById("teamCap").onchange = (e) => {
+    const c = parseInt(e.target.value, 10); TEAM_CAP = c > 0 ? c : null;
+    try { localStorage.setItem("pjm_team_cap", TEAM_CAP ? String(TEAM_CAP) : ""); } catch {}
+    toast(TEAM_CAP ? "組數上限 " + TEAM_CAP + " 組，下次重新分組時生效" : "已改回自動"); pSeat();
+  };
   document.getElementById("regroup").onclick = async () => { if (await regroup(false, true)) pSeat(); };
   const all = document.getElementById("regroupAll"); if (all) all.onclick = async () => { if (confirm("連已入座的人也會被重新分組，他們需要換位置。確定嗎？") && (await regroup(true, false))) { toast("已全部重新分組"); pSeat(); } };
   pane.querySelectorAll("[data-seat]").forEach((i) => (i.onchange = async () => { await rpc("pjm_admin_set_seat", { pid: +i.dataset.id, which: 2, g: i.value.trim() }); toast("已儲存"); }));
