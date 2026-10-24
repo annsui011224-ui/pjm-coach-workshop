@@ -163,7 +163,7 @@ function viewCard() {
     : `<div style="text-align:center"><button class="btn" id="cardBack">回到目前階段</button></div>`;
   return `
   <div class="card soft rolecard">
-    ${sprigSvg()}
+    ${sprigSvg(a.plant)}
     <div class="pill">已完成報到</div>
     <div class="rt">${esc(m.name)}，你是「${a.title}」</div>
     <div class="rolechips">${rs.map((r) => `<span class="pill">${roleLabel(r)}</span>`).join("")}${m.unit ? `<span class="pill warn">${esc(m.unit)}</span>` : ""}</div>
