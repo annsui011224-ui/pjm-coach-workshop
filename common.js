@@ -161,7 +161,7 @@ async function loadAll() {
   ]);
   const err = [p, s, r, n, f, i, ro, tr].find((x) => x.error);
   if (err) throw err.error;
-  return { people: p.data, stage: s.data.stage, regs: r.data, notes: n.data, future: f.data, inv: i.data, rows: ro.data, trainees: tr.data, roster: buildRoster(ro.data, tr.data) };
+  return { people: p.data, stage: s.data.stage, maxIdx: s.data.max_idx ?? 0, regs: r.data, notes: n.data, future: f.data, inv: i.data, rows: ro.data, trainees: tr.data, roster: buildRoster(ro.data, tr.data) };
 }
 
 // 名單中的一列 = 一位教練；一位教練可帶多位新手 PJM（pjm_trainee）。

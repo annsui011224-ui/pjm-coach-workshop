@@ -15,7 +15,7 @@ const toast = (t) => { const d = document.createElement("div"); d.className = "t
 async function boot() {
   try {
     const d = await loadAll();
-    S.people = d.people; S.stage = d.stage; S.roster = d.roster; S.rows = d.rows; S.trainees = d.trainees;
+    S.people = d.people; S.stage = d.stage; S.maxIdx = d.maxIdx; S.roster = d.roster; S.rows = d.rows; S.trainees = d.trainees;
     d.regs.forEach((r) => S.regs.set(r.person_id, r));
     d.notes.forEach((n) => S.notes.set(nkey(n.scope, n.scope_key, n.stage, n.field), n.value));
     d.future.forEach((f) => S.future.set(f.person_id, f));
@@ -30,14 +30,16 @@ async function boot() {
 }
 
 async function pollState() {
-  const { data } = await sb.from("pjm_state").select("stage").eq("id", 1).single();
-  if (data && data.stage !== S.stage) { S.stage = data.stage; if (S.showCard === true) S.showCard = false; render(); }
+  const { data } = await sb.from("pjm_state").select("stage,max_idx").eq("id", 1).single();
+  if (data) S.maxIdx = data.max_idx;
+  if (data && data.stage !== S.stage) { S.stage = data.stage; S.view = null; S.menuOpen = false; if (S.showCard === true) S.showCard = false; render(); }
 }
 
 function subscribe() {
   sb.channel("pjm-all")
     .on("postgres_changes", { event: "*", schema: "public", table: "pjm_state" }, (p) => {
-      if (p.new.stage !== S.stage) { S.stage = p.new.stage; if (S.showCard === true) S.showCard = false; if (S.meId) toast(`Facilitator 開啟了：${STAGE[S.stage].title}`); render(); }
+      S.maxIdx = p.new.max_idx ?? S.maxIdx;
+      if (p.new.stage !== S.stage) { S.stage = p.new.stage; S.view = null; S.menuOpen = false; if (S.showCard === true) S.showCard = false; if (S.meId) toast(`Facilitator 開啟了：${STAGE[S.stage].title}`); render(); }
     })
     .on("postgres_changes", { event: "*", schema: "public", table: "pjm_notes" }, (p) => {
       const n = p.new; if (n?.scope) S.notes.set(nkey(n.scope, n.scope_key, n.stage, n.field), n.value); refresh();
@@ -62,33 +64,49 @@ function subscribe() {
 function header() {
   const m = me();
   let h = `<span class="brand">PJM 教練團 · 經驗反思交流會</span><span class="row">`;
-  if (m && !S.showCard && S.stage !== 13) h += `<span class="pill">階段 ${stageIdx(S.stage)}／${STAGES.length - 1}</span>`;
+  if (m && !S.showCard && S.stage !== 13) h += `<button class="chip" id="btnStages" aria-expanded="${!!S.menuOpen}">階段 ${stageIdx(vs())}／${STAGES.length - 1} ▾</button>`;
   if (m) h += `<button class="chip" id="btnCard">${esc(m.name)} ▾</button>`;
   h += `</span>`;
   const roles = myRoles();
   if (m && roles.length > 1) {
     h += `<span class="row" style="width:100%">目前身分：` + roles.map((r) => `<button class="chip ${activeRole() === r ? "on" : ""}" data-role="${r}">${roleLabel(r)}</button>`).join("") + `</span>`;
   }
+  if (m && S.menuOpen) {
+    h += '<div class="stageMenu"><p class="hint" style="margin:0 0 6px">可以回到前面已開啟的階段，修改你的答案與筆記。</p>' +
+      STAGES.map((s, i) => ({ s, i })).filter(({ i }) => i <= S.maxIdx).map(({ s, i }) =>
+        '<button class="stagebtn ' + (s.n === vs() ? "cur" : "") + '" data-goview="' + s.n + '"><span>' + i + ". " + esc(s.title) + "</span>" + (s.n === S.stage ? '<span class="pill">進行中</span>' : "") + "</button>").join("") + "</div>";
+  }
   $hdr.innerHTML = h;
 }
+const vs = () => (S.view != null && stageIdx(S.view) <= S.maxIdx ? S.view : S.stage);
 const activeRole = () => { const r = myRoles(); return r.includes(S.role) ? S.role : r[0]; };
+
+// 回看前面階段時顯示的提示列
+function viewBanner() {
+  if (S.showCard === true || vs() === S.stage) return "";
+  return '<div class="viewBanner"><span>你正在回看「' + esc(STAGE[vs()].title) + '」，修改的答案與筆記會自動儲存。</span><button class="btn" id="backNow">回到目前階段</button></div>';
+}
 
 function render() {
   header();
   const m = me();
-  S.renderKey = `${S.meId}|${S.stage}|${S.showCard}`;
+  S.renderKey = `${S.meId}|${vs()}|${S.showCard}`;
   if (!m || S.showCard === "register") { $app.innerHTML = viewRegister(); bindRegister(); return; }
-  if (S.showCard === true || S.stage === 0 || S.stage === 13) { $app.innerHTML = viewCard(); bindCard(); return; }
+  if (S.showCard === true || vs() === 0 || vs() === 13) { $app.innerHTML = viewBanner() + viewCard(); bindCard(); return; }
   const VIEWS = { 1: v1, 2: v2, 3: v3, 4: v4, 5: v5, 6: v6, 7: v7, 8: v8, 9: v9, 10: v10, 11: v11, 12: v12 };
   const BINDS = { 2: bind2, 3: bind3, 4: bind4, 5: bind5, 6: bind6, 8: bind8, 11: bind11, 12: bind12 };
-  $app.innerHTML = VIEWS[S.stage]();
-  const after = BINDS[S.stage];
+  $app.innerHTML = viewBanner() + VIEWS[vs()]();
+  const after = BINDS[vs()];
   if (after) after();
   refresh();
   window.scrollTo(0, 0);
 }
 
 document.addEventListener("click", (e) => {
+  if (e.target.closest("#btnStages")) { S.menuOpen = !S.menuOpen; header(); return; }
+  const g = e.target.closest("[data-goview]");
+  if (g) { const id = +g.dataset.goview; S.view = id === S.stage ? null : id; S.menuOpen = false; S.showCard = false; render(); return; }
+  if (e.target.closest("#backNow")) { S.view = null; S.menuOpen = false; render(); return; }
   const r = e.target.closest("[data-role]");
   if (r) { S.role = r.dataset.role; ls.set("pjm_role", S.role); render(); return; }
   if (e.target.closest("#btnCard")) { S.showCard = S.showCard === true ? false : true; render(); }
@@ -158,8 +176,8 @@ function planLine(m) {
 }
 function viewCard() {
   const m = me(), rs = myRoles(), a = ROLES[activeRole()] || ROLES.coach;
-  const waiting = (S.stage === 0 || S.stage === 13)
-    ? `<p class="wait"><span class="dot"></span>${S.stage === 13 ? "行前調查已完成。組別與座位會在工作坊當天公布，屆時請開啟同一個網址。" : "工作坊尚未開始，開始後這裡會自動切換到第一個階段。"}</p>`
+  const waiting = (vs() === 0 || vs() === 13)
+    ? `<p class="wait"><span class="dot"></span>${vs() === 13 ? "行前調查已完成。組別與座位會在工作坊當天公布，屆時請開啟同一個網址。" : "工作坊尚未開始，開始後這裡會自動切換到第一個階段。"}</p>`
     : `<div style="text-align:center"><button class="btn" id="cardBack">回到目前階段</button></div>`;
   return `
   <div class="card soft rolecard">
@@ -173,7 +191,7 @@ function viewCard() {
   ${rs.length > 1 ? `<div class="card"><h3>你有多重身分</h3><p class="hint" style="margin:0">工作坊進行中，隨時可以用上方的「目前身分」按鈕切換。</p></div>` : ""}
   <div class="card"><h3>當天會發生什麼？</h3>
     <p class="hint" style="margin:0">當天共 ${STAGES.length - 2} 個階段，每個階段都由 facilitator 開啟。完成後請稍候，大家到齊才會一起前進。${pjmNamesOf(S.roster, m.name).length ? "最後，你會帶走一份屬於 " + esc(pjmNamesOf(S.roster, m.name).join("、")) + " 的培育計畫。" : "最後，你會帶走這場工作坊的培育計畫紀錄。"}</p></div>
-  ${S.stage === 0 ? seatingCard() : ""}
+  ${vs() === 0 ? seatingCard() : ""}
   ${waiting}
   <p style="text-align:center"><button class="chip" id="rgAgain">不是我？重新報到／修改資料</button></p>`;
 }

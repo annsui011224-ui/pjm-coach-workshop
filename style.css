@@ -158,3 +158,9 @@ header.top { background: var(--bg); }
 .rolecard .rt { font-size: 24px; font-weight: 900; }
 
 h1, h2, .rolecard .rt, .p-h1, .p-lead, .wait { text-wrap: balance; }
+
+header.top .in { position: relative; }
+.stageMenu { position: absolute; left: 16px; right: 16px; top: 100%; z-index: 30; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 12px; box-shadow: 0 10px 30px #0004; max-height: 70vh; overflow: auto; }
+.stageMenu .stagebtn { margin-bottom: 4px; }
+.viewBanner { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--warn); border-radius: 18px; padding: 10px 16px; margin: 14px 0 0; font-size: 14px; }
+.viewBanner .btn { padding: 8px 18px; font-size: 14px; }
