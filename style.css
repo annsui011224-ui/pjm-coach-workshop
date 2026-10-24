@@ -164,3 +164,6 @@ header.top .in { position: relative; }
 .stageMenu .stagebtn { margin-bottom: 4px; }
 .viewBanner { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--warn); border-radius: 18px; padding: 10px 16px; margin: 14px 0 0; font-size: 14px; }
 .viewBanner .btn { padding: 8px 18px; font-size: 14px; }
+
+textarea.locked { background: var(--warn); opacity: .85; cursor: not-allowed; }
+.lockMsg { margin: 4px 2px 0; font-size: 13px; color: var(--accent); }

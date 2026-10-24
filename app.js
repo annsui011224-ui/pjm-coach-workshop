@@ -98,6 +98,7 @@ function render() {
   $app.innerHTML = viewBanner() + VIEWS[vs()]();
   const after = BINDS[vs()];
   if (after) after();
+  ensureLocks?.();
   refresh();
   window.scrollTo(0, 0);
 }
@@ -246,6 +247,7 @@ function sync() {
 function refresh() {
   if (!me() || S.showCard) return;
   sync();
+  applyLocks?.();
   document.querySelectorAll("[data-dyn]").forEach((el) => { const f = DYN[el.dataset.dyn]; if (f) el.innerHTML = f(); });
 }
 
