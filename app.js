@@ -149,6 +149,8 @@ function bindRegister() {
       <div class="q" style="margin-top:14px">⑤ 午餐飲食偏好</div>
       <select id="rgDiet">${DIETS.map((d) => `<option ${(known ? diet === d : (diet && d.startsWith("其他"))) ? "selected" : ""}>${d}</option>`).join("")}</select>
       <input type="text" id="rgDietOther" placeholder="請說明（例如過敏原）" style="margin-top:8px;display:none" value="${known ? "" : esc(diet)}">
+      <div class="q" style="margin-top:14px">⑥ 筆電確認</div>
+      <label class="opt"><input type="checkbox" id="rgLaptop" ${prev?.laptop_ok ? "checked" : ""}><span>我確認當天會攜帶筆電，並確認筆電電量可以持續 2 小時</span></label>
       <div style="margin-top:18px"><button class="btn" id="rgGo">完成報到，看我的角色</button></div>`;
     const dsel = document.getElementById("rgDiet"), oth = document.getElementById("rgDietOther");
     const tog = () => { oth.style.display = dsel.value.startsWith("其他") ? "" : "none"; };
@@ -158,9 +160,11 @@ function bindRegister() {
       if (!rs.length) { toast("請至少選一個身分"); return; }
       let dv = dsel.value; if (dv.startsWith("其他")) dv = oth.value.trim() || "其他";
       if (!(await saveTraineeInputs())) return;
-      const { error } = await sb.from("pjm_registration").upsert({ person_id: p.id, roles: rs, diet: dv, updated_at: new Date().toISOString() });
+      const laptop = document.getElementById("rgLaptop").checked;
+      if (!laptop) { toast("請勾選第 6 題：確認當天會攜帶筆電，且電量可以持續 2 小時"); return; }
+      const { error } = await sb.from("pjm_registration").upsert({ person_id: p.id, roles: rs, diet: dv, laptop_ok: true, updated_at: new Date().toISOString() });
       if (error) { toast("儲存失敗：" + error.message); return; }
-      S.regs.set(p.id, { person_id: p.id, roles: rs, diet: dv });
+      S.regs.set(p.id, { person_id: p.id, roles: rs, diet: dv, laptop_ok: true });
       S.meId = p.id; ls.set("pjm_me", String(p.id)); S.role = rs[0]; ls.set("pjm_role", S.role);
       S.showCard = true; render();
     };

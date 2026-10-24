@@ -125,7 +125,7 @@ function projPrep() {
   const diets = {}; D.regs.forEach((r) => { const k = r.diet || "未填"; diets[k] = (diets[k] || 0) + 1; });
   const units = [...new Set(all.map((p) => p.unit || "重要嘉賓"))];
   return pH1("行前準備") + pLead("請開啟通知信中的連結，填寫行前調查（身分、新手 PJM、午餐飲食偏好）。<br>組別與座位會在工作坊當天公布。") +
-    pBar(reg.length, all.length, "已完成行前調查") +
+    pBar(reg.length, all.length, "已完成行前調查") + pBar(D.regs.filter((r) => r.laptop_ok).length, all.length, "已確認攜帶筆電、電量可撐 2 小時") +
     '<div class="p-grid">' + units.map((u) => { const m = all.filter((p) => (p.unit || "重要嘉賓") === u), n = m.filter((p) => regOf(p.id)).length;
       return '<div class="p-card"><div class="p-ctitle"><span>' + esc(u) + '</span><span class="p-count ' + (n === m.length ? "full" : "") + '">' + n + "／" + m.length + "</span></div>" + m.map((p) => chip(p.name, !!regOf(p.id))).join("") + "</div>"; }).join("") + "</div>" +
     '<p class="p-sub">午餐飲食：' + (Object.entries(diets).map(([k, v]) => esc(k) + " × " + v).join("　") || "尚無資料") + "</p>";

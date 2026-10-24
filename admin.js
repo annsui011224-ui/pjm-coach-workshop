@@ -81,8 +81,8 @@ function pReg() {
   <div class="card"><h3>重要嘉賓　${gd.length}／${guests.length}</h3><div class="bar"><i style="width:${(gd.length / guests.length) * 100}%"></i></div>
      <p class="hint" style="margin:8px 0 0">未報到：${guests.filter((p) => !regOf(p.id)).map((p) => esc(p.name)).join("、") || "無 🎉"}</p></div></div>
   <h2>飲食偏好統計</h2><div class="card">${Object.entries(diets).map(([k, v]) => `<span class="pill" style="margin:2px">${esc(k)} × ${v}</span>`).join("") || "尚無資料"}</div>
-  <h2>明細</h2><div class="card" style="overflow:auto"><table class="t"><tr><th>姓名</th><th>單位</th><th>身分</th><th>新手 PJM</th><th>飲食</th><th>到場準備</th></tr>
-  ${D.people.map((p) => { const r = regOf(p.id); return `<tr><td>${esc(p.name)}</td><td>${esc(p.unit || "—")}</td><td>${r ? r.roles.map(roleLabel).join("、") : "<span class='hint'>未報到</span>"}</td><td>${esc(rosterRowsOf(D.roster, p.name).map((x) => x.pjm_name || "（未填）").join("、"))}</td><td>${esc(r?.diet || "")}</td><td>${readyOf(p.id) ? "✓" : ""}</td></tr>`; }).join("")}</table></div>`;
+  <h2>明細</h2><div class="card" style="overflow:auto"><table class="t"><tr><th>姓名</th><th>單位</th><th>身分</th><th>新手 PJM</th><th>飲食</th><th>筆電確認</th><th>到場準備</th></tr>
+  ${D.people.map((p) => { const r = regOf(p.id); return `<tr><td>${esc(p.name)}</td><td>${esc(p.unit || "—")}</td><td>${r ? r.roles.map(roleLabel).join("、") : "<span class='hint'>未報到</span>"}</td><td>${esc(rosterRowsOf(D.roster, p.name).map((x) => x.pjm_name || "（未填）").join("、"))}</td><td>${esc(r?.diet || "")}</td><td>${r?.laptop_ok ? "✓" : ""}</td><td>${readyOf(p.id) ? "✓" : ""}</td></tr>`; }).join("")}</table></div>`;
 }
 
 // ---- 階段 5 小組分享 ----
