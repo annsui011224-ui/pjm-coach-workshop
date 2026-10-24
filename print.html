@@ -57,6 +57,8 @@
     .page { margin:0; box-shadow:none; width:auto; min-height:0; padding:0; }
     .cover { width:210mm; height:297mm; }
   }
+  .q4i { display:flex; gap:4px; margin:0 0 4px; }
+  .q4i svg { width:30px; height:36px; display:block; }
   .dash .grid2 { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
   .dash .card { border:1px solid var(--line); border-radius:12px; padding:10px 12px; background:#fff; margin:6px 0; break-inside:avoid; }
   .dash .bar { height:9px; background:var(--line); border-radius:99px; overflow:hidden; }
@@ -134,7 +136,7 @@
       (inv.has_obs ? row("優先能力", (inv.abilities || []).join("、")) + row("三個月後的期待", inv.expectation) : row("了解 PJM 的機會", inv.opportunities)) + "</table>";
     body += "<h2>培育共識</h2><table>" +
       row("① 三個月後能獨立做到", q("q1")) + row("② 優先關注的能力", q("q2").split("||").filter(Boolean).join("、")) + row("③ 目前的培育起點", q("q3")) +
-      row("④ 真實情境與下一步", q("q4")) + q4Fields(rw).map((x) => row("　" + esc(x.label) + "，要做", q(x.key))).join("") + row("⑤ 何時執行／如何知道進步", q("q5")) + "</table>" +
+      row("④ 真實情境與下一步", q("q4")) + q4Fields(rw).map((x) => '<tr><th><span class="q4i">' + x.roles.map((rk) => sprigSvg(ROLES[rk].plant)).join("") + "</span>" + esc(x.label) + "，要做</th><td>" + (nl2br(q(x.key)) || '<span class="muted">（未填寫）</span>') + "</td></tr>").join("") + row("⑤ 何時執行／如何知道進步", q("q5")) + "</table>" +
       "<h2>可行性檢查</h2><table>" + F_QUESTIONS.map((x) => { const v = nv(...fLoc(x, rw)); return row(esc(x.q), x.multi ? v.split("||").filter(Boolean).join("、") : v); }).join("") + row("補充", r("fnote")) + "</table>";
     h += pageOf(body, 2);
   });
