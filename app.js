@@ -337,6 +337,17 @@ function lightbox(url, onPick) {
 }
 document.addEventListener("click", (e) => { const f = e.target.closest("[data-full]"); if (f) lightbox(f.dataset.full); });
 
+function shareCard() {
+  const g = me().seat2;
+  if (!g) return '<p class="wait"><span class="dot"></span>請先和小組成員分享。Facilitator 會開啟下一步：寫給未來的自己。</p>';
+  const done = note("seat", g, 2, "share_done");
+  const mates = S.people.filter((p) => p.seat2 === g && !p.absent), n = mates.filter((p) => (S.future.get(p.id) || {}).image_submitted).length;
+  return `<div class="card soft"><div class="q">小組內分享圖片</div>
+    <p class="hint">${esc(teamName(g))} 已送出圖片：${n} / ${mates.length} 人。等大家都選好，就在小組內輪流分享自己選的圖片和理由；<b>全組分享完之後</b>，由任一位組員按下下面的按鈕，投影畫面才會標示這一組完成。</p>
+    <p class="row"><button class="btn" id="shareDone">${done ? "取消「已完成」" : "小組內已完成圖片分享"}</button><span class="saved" id="shareMsg">${done ? "已通知 facilitator ✓" : ""}</span></p></div>
+  <p class="wait"><span class="dot"></span>${done ? "這一組已完成分享。" : "分享完請按上面的按鈕。"}Facilitator 會開啟下一步：寫給未來的自己。</p>`;
+}
+
 function v2() {
   const f = S.future.get(S.meId) || {};
   const label = esc(pjmLabel());
@@ -344,7 +355,7 @@ function v2() {
   <div class="card"><div class="q">你選的圖片</div><p class="hint">點圖片可以全螢幕放大，和組員分享你為什麼選這張。</p>
     <img class="bigpic" data-full="${esc(f.image_url)}" src="${esc(f.image_url)}" alt="">
     <p><button class="btn ghost" id="repick">重新選擇</button></p></div>
-  <p class="wait"><span class="dot"></span>請先和小組成員分享。Facilitator 會開啟下一步：寫給未來的自己。</p><div data-dyn="ice"></div>`;
+  ${shareCard()}<div data-dyn="ice"></div>`;
   return ph(STAGE[2].title, "") + nameFixCard() + `
   <div class="card"><div class="q">請選一張圖片，${esc(pickLead(pjmNamesOf(S.roster, me().name)))}，對你的好處是什麼？</div>
     <p class="hint">點選圖片可以全螢幕放大。選好後按「送出」，再和小組成員分享你的選擇。</p>
@@ -356,6 +367,12 @@ function bind2() {
   bindNameFix();
   const f = S.future.get(S.meId) || {};
   if (f.image_submitted) {
+    const sd = document.getElementById("shareDone"), g0 = me().seat2;
+    if (sd && g0) sd.onclick = async () => {
+      const k = nkey("seat", g0, 2, "share_done");
+      await saveNote(k, note("seat", g0, 2, "share_done") ? "" : new Date().toISOString());
+      render();
+    };
     document.getElementById("repick").onclick = async () => { S.future.set(S.meId, { ...f, image_submitted: false }); S.pendingPic = f.image_url; await saveFuture(); await saveNote(nkey("person", String(S.meId), 2, "sent_at"), ""); render(); };
     return;
   }

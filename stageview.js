@@ -42,9 +42,12 @@ function projPurpose() {
 }
 
 function projPickImage() {
-  const all = attendees(), n = all.filter((p) => D.future.find((f) => f.person_id === p.id && f.image_submitted)).length;
+  const gs = seatGroups(), has = (id) => D.future.some((f) => f.person_id === id && f.image_submitted);
+  const done = gs.filter(({ g }) => nv("seat", g, 2, "share_done")).length;
   return pH1("選一張圖片") + pLead("請選一張圖片，說明當你的新手 PJM 成為能獨當一面的 PJM 時，<b>對你的好處是什麼？</b>") +
-    pLead("選好後按「送出」，再和同組夥伴分享你選這張圖的理由。") + pBar(n, all.length, "已送出圖片");
+    pLead("選好後按「送出」，等組員都選好，再在小組內輪流分享；<b>分享完請按「小組內已完成圖片分享」</b>。") + pBar(done, gs.length, "已完成圖片分享的組別") +
+    `<div class="p-grid">${gs.map(({ g, members }) => { const fin = nv("seat", g, 2, "share_done"), n = members.filter((p) => has(p.id)).length;
+      return `<div class="p-card"><div class="p-ctitle"><span>${teamName(g)}</span><span class="p-count ${fin ? "full" : ""}">${fin ? "已完成分享" : n < members.length ? "選圖中 " + n + "/" + members.length : "分享中"}</span></div></div>`; }).join("")}</div>`;
 }
 
 function projLetter() {
