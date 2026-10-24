@@ -27,11 +27,21 @@ function seatBoard(field, title) {
     ${absent.length ? `<div class="card" style="margin:6px 0;border-style:dashed"><b>請假（不分組）</b><br>${absent.map(chipHtml).join("")}</div>` : ""}</div>`;
 }
 
-async function regroup(silent) {
-  const attend = D.people.filter((p) => !p.absent).map((p) => ({ name: p.name, unit: p.unit, role: primaryOf((regOf(p.id) || {}).roles || p.roles) }));
-  if (!silent && D.people.some((p) => p.seat2) && !confirm("會覆蓋目前的分組，確定要重新隨機分組嗎？")) return false;
-  await rpc("pjm_admin_set_seats", { which: 2, assignments: autoGroup(attend, relatedPairs(D.rows), null).assignments });
-  toast(silent ? "已自動分組" : "已重新分組"); await load(true);
+// 已經入座的人：在預約報到階段已經勾選過任一項準備事項
+const isSeated = (p) => !p.absent && !!p.seat2 && [0, 1].some((i) => nv("person", String(p.id), 0, "ready" + i) === "1");
+
+// keepSeated = true：已入座的人維持原本的組別，只重新安排尚未入座的人
+async function regroup(silent, keepSeated = true) {
+  const attend = D.people.filter((p) => !p.absent).map((p) => ({ name: p.name, unit: p.unit, seat2: p.seat2, role: primaryOf((regOf(p.id) || {}).roles || p.roles) }));
+  const seated = keepSeated ? D.people.filter(isSeated) : [];
+  if (!silent) {
+    const msg = seated.length ? "已有 " + seated.length + " 位已入座，他們的組別不會變動，只會重新安排尚未入座的人。要繼續嗎？" : "會覆蓋目前的分組，確定要重新隨機分組嗎？";
+    if (D.people.some((p) => p.seat2) && !confirm(msg)) return false;
+  }
+  const related = relatedPairs(D.rows);
+  const res = seated.length ? autoGroupKeepSeated(attend, related, new Map(seated.map((p) => [p.name, p.seat2]))) : autoGroup(attend, related, null);
+  await rpc("pjm_admin_set_seats", { which: 2, assignments: res.assignments });
+  toast(silent ? "已自動分組" : seated.length ? "已重新分組，" + seated.length + " 位已入座的人維持原位" : "已重新分組"); await load(true);
   return true;
 }
 
@@ -50,7 +60,7 @@ async function pSeat() {
   <div class="card soft"><b>預計出席 ${attendN} 人 → 分成 ${sizes.length} 組（每組 ${sizes.length ? Math.min(...sizes) + "–" + Math.max(...sizes) : 0} 人）</b>
     <p class="hint" style="margin:4px 0 0">從「預約報到」到「小組討論」都使用這一份跨產品分組：同一列名單的人（教練與其 PJM 主管、直接主管、部級主管）不會同組，並盡量讓同組的人來自不同單位。「回到你的培育小組」之後改為培育小組（見「培育小組」分頁）。</p></div>
   <div class="card"><h3>誰請假？</h3><p class="hint">勾選請假的人，再按下方「重新隨機分組」，系統會依實際出席人數重新分配。</p>${absentHtml}</div>
-  <div class="row" style="margin:10px 0"><button class="btn" id="regroup">🎲 重新隨機分組</button></div>
+  <div class="row" style="margin:10px 0"><button class="btn" id="regroup">🎲 重新隨機分組</button>${D.people.some(isSeated) ? '<button class="btn ghost" id="regroupAll">全部重新分組（包含已入座的人）</button><span class="hint">已入座 ' + D.people.filter(isSeated).length + " 人，按左邊的按鈕不會動到他們" + "</span>" : ""}</div>
   ${seatBoard("seat2", "目前分組")}
   <details class="ref"><summary>手動微調</summary>
     <div class="card"><b>批次貼上</b><p class="hint" style="margin:4px 0">每行一位：<code>英文名, 組別</code>。</p>
@@ -60,7 +70,8 @@ async function pSeat() {
   pane.querySelectorAll("[data-absent]").forEach((c) => (c.onchange = async () => {
     await rpc("pjm_admin_set_absent", { pid: +c.dataset.absent, flag: c.checked }); await load(true); pSeat();
   }));
-  document.getElementById("regroup").onclick = async () => { if (await regroup(false)) pSeat(); };
+  document.getElementById("regroup").onclick = async () => { if (await regroup(false, true)) pSeat(); };
+  const all = document.getElementById("regroupAll"); if (all) all.onclick = async () => { if (confirm("連已入座的人也會被重新分組，他們需要換位置。確定嗎？") && (await regroup(true, false))) { toast("已全部重新分組"); pSeat(); } };
   pane.querySelectorAll("[data-seat]").forEach((i) => (i.onchange = async () => { await rpc("pjm_admin_set_seat", { pid: +i.dataset.id, which: 2, g: i.value.trim() }); toast("已儲存"); }));
   document.getElementById("bulkGo").onclick = async () => {
     const lines = document.getElementById("bulk").value.split("\n").map((l) => l.split(/[,，\t]/).map((x) => x.trim())).filter((a) => a[0]);
