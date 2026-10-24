@@ -177,3 +177,7 @@ textarea.locked { background: var(--warn); opacity: .85; cursor: not-allowed; }
 .p-plants .sprig { width: clamp(70px, 11vw, 190px); height: auto; margin: 0 auto; }
 .p-plants figcaption { font-family: var(--serif); font-weight: 700; font-size: clamp(14px, 1.5vw, 24px); }
 .p-intro { text-align: center; margin: 14px 0 0; font-family: var(--serif); font-weight: 700; color: var(--brand); }
+
+/* 全螢幕時，下方固定預留給「上一階段／下一階段」列的空間，內容不會被它蓋住 */
+.stageRight:fullscreen { padding-bottom: 116px; }
+.stageRight:fullscreen .p-nav { bottom: 14px; }
