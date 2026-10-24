@@ -62,7 +62,7 @@ function projKS() {
 function projDiscuss() {
   const gs = seatGroups(), sent = gs.filter(({ g }) => nv("seat", g, 5, "submitted")).length;
   return pH1("小組討論") + pLead("剛才 KS 分享的經驗中，有沒有哪一個做法，<b>即使我的資源有限，也有機會嘗試？</b>") +
-    pLead("同組一起討論，在電腦上共編一份答案，討論完按「送出給 facilitator」。") + pBar(sent, gs.length, "已送出的組別") +
+    pLead("同組一起討論，在電腦上共編一份答案，討論完按「送出給 facilitator」。") + '<div class="p-tip">' + WRITER_TIP + "</div>" + pBar(sent, gs.length, "已送出的組別") +
     `<div class="p-grid">${gs.map(({ g, members }) => `<div class="p-card"><div class="p-ctitle"><span>${teamName(g)}</span><span class="p-count ${nv("seat", g, 5, "submitted") ? "full" : ""}">${nv("seat", g, 5, "submitted") ? "已送出" : "討論中"}</span></div></div>`).join("")}</div>` +
     `<p class="row" style="margin-top:18px"><button class="btn" data-act="share">▶ 投影各組答案</button><button class="btn ghost" data-act="cloud">☁ 文字雲</button></p>`;
 }
@@ -97,13 +97,13 @@ function projAlign() {
   return '<h1 class="p-h1">教練 × PJM 主管<br>對齊培育共識</h1>' + `<ol class="p-list">
     <li>三個月後，希望新手能獨立做到什麼？<small>請描述可觀察的工作行為</small></li><li>本次優先關注哪一項 PJM 能力？</li><li>目前的培育起點</li>
     <li>下一步要做什麼？<small>選一個真實工作情境，並明確分工</small></li><li>預計何時執行？如何知道有進步？</li></ol>` +
-    `<div class="p-tip"><b>✎ 請小組指派一位成員負責填寫</b>，其他人用討論的方式提供內容，避免共編時互相覆蓋彼此的紀錄。</div>` + pBar(done, teams.length, "已完成的培育小組");
+    '<div class="p-tip">' + WRITER_TIP + "</div>" + pBar(done, teams.length, "已完成的培育小組");
 }
 
 function projFeasible() {
   const teams = D.roster.filter((r) => r.id > 0), done = teams.filter((r) => ["f1", "f2", "f3"].every((f) => nv("row", String(r.id), 8, f))).length;
   return pH1("培育計畫可行性檢查") + `<ol class="p-list">${F_QUESTIONS.map((q) => `<li>${esc(q.q)}</li>`).join("")}</ol>` +
-    pBar(done, teams.length, "已完成的培育小組") + `<p class="p-sub">全部確認後，請按「送出培育計畫」。</p>`;
+    '<div class="p-tip">' + WRITER_TIP + "</div>" + pBar(done, teams.length, "已完成的培育小組") + `<p class="p-sub">全部確認後，請按「送出培育計畫」。</p>`;
 }
 
 function projEnergize() {

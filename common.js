@@ -307,3 +307,6 @@ const pickLead = (names) => (names.length ? "說明當 " + names.join("、") + "
 
 // 跨產品小組的顯示名稱：Team 1、Team 2…（已跳脫，可直接放進 HTML）
 const teamName = (g) => esc("Team " + g);
+
+// 小組共編頁面共用的提醒（投影畫面與參與者畫面都用）
+const WRITER_TIP = "<b>✎ 請小組指派一位成員負責填寫</b>，其他人用討論的方式提供內容，避免共編時互相覆蓋彼此的紀錄。";

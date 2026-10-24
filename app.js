@@ -449,6 +449,7 @@ function v5() {
   return ph(STAGE[5].title, "和小組夥伴一起討論，共編一份答案") + (g ? `
   <div class="card"><div class="pill warn">你的小組：${teamName(g)}</div> <span class="hint">${esc(mem)}</span>
     <div class="q" style="margin-top:12px">剛才 KS 分享的經驗中，有沒有哪一個做法，即使我的資源有限，也有機會嘗試？</div>
+    <div style="background:var(--warn);border-radius:14px;padding:8px 14px;margin:8px 0">${WRITER_TIP}</div>
     <p class="hint">同組夥伴看到的是同一份內容，可以一起補充。討論完請按「送出」，facilitator 會請各組輪流分享。</p>
     ${nf("seat", g, 5, "tryable", 7)}
     <p class="row"><button class="btn" id="sendGroup">送出給 facilitator</button><span class="saved" id="sentMsg"></span></p></div><div data-dyn="ice"></div>`
@@ -569,7 +570,7 @@ function v7() {
   const r = pickRow(); if (!r) return noRow(7);
   const k = (f) => ["row", String(r.id), 7, f], nm = esc(rowPjm(r));
   return ph(STAGE[7].title, `${rowPjm(r)} 的培育小組：${rowPeople(r).join("、")}`) + rowTabs() + `
-  <div class="card" style="background:var(--warn);border-color:transparent"><b>✎ 請小組指派一位成員負責填寫</b><div class="hint" style="margin:2px 0 0">其他人用討論的方式提供內容，避免共編時互相覆蓋彼此的紀錄。</div></div>
+  <div class="card" style="background:var(--warn);border-color:transparent">${WRITER_TIP}</div>
   <details class="ref" open><summary>大家剛才各自的盤點</summary><div data-dyn="teamInv"></div></details>
   <div class="card"><div class="q">① 三個月後，希望 ${nm} 能獨立做到什麼？</div><p class="hint">請描述一個可觀察的工作行為，而不是只寫「提升溝通能力」。</p>${nf(...k("q1"), 3)}</div>
   <div class="card"><div class="q">② 本次優先關注 ${nm} 的哪一項 PJM 能力？</div>${checks(...k("q2"), ABILITIES)}</div>
@@ -584,6 +585,7 @@ function v8() {
   const r = pickRow(); if (!r) return noRow(8);
   const k = (f) => ["row", String(r.id), 8, f];
   return ph(STAGE[8].title, `${rowPjm(r)} 的培育小組`) + rowTabs() + `
+  <div class="card" style="background:var(--warn);border-color:transparent">${WRITER_TIP}</div>
   <details class="ref" open><summary>回看：階段 7 的培育共識（即時更新）</summary><div data-dyn="stage5"></div></details>
   ${F_QUESTIONS.filter((x) => !x.perCoach || (r.coach === me().name && myRoles().includes("coach"))).map((x, i) => `<div class="card"><div class="q">${i + 1}. ${esc(x.q)}</div>${x.perCoach && S.roster.filter((y) => y.row_id === r.row_id && y.id > 0).length > 1 ? `<p class="hint">${esc(r.coach)} 教練帶多位新手，這題只需回答一次，每位新手頁面的答案相同。</p>` : ""}${x.multi ? checks(...fLoc(x, r), x.opts) : radios(...fLoc(x, r), x.opts)}</div>`).join("")}
   <div class="card"><div class="q">補充說明（選填）</div>${nf(...k("fnote"), 3)}</div>
