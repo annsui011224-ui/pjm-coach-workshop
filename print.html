@@ -57,6 +57,14 @@
     .page { margin:0; box-shadow:none; width:auto; min-height:0; padding:0; }
     .cover { width:210mm; height:297mm; }
   }
+  .dash .grid2 { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+  .dash .card { border:1px solid var(--line); border-radius:12px; padding:10px 12px; background:#fff; margin:6px 0; break-inside:avoid; }
+  .dash .bar { height:9px; background:var(--line); border-radius:99px; overflow:hidden; }
+  .dash .bar i { display:block; height:100%; background:var(--brand); }
+  .dash .hint { color:var(--muted); font-size:12px; }
+  .dash .row { display:flex; gap:8px; justify-content:space-between; }
+  .dash .q { font-weight:700; }
+  .dash { --accent:#b8643c; }
   @page { size:A4; margin:14mm; }
   @page cover { size:A4; margin:0; }
 </style>
@@ -66,6 +74,7 @@
 <div id="doc"></div>
 <script src="supabase.min.js"></script>
 <script src="common.js"></script>
+<script src="dash.js"></script>
 <script>
 (async () => {
   const pid = parseInt(new URLSearchParams(location.search).get("pid"), 10);
@@ -82,6 +91,8 @@
   const row = (l, v) => `<tr><th>${l}</th><td>${nl2br(v) || '<span class="muted">（未填寫）</span>'}</td></tr>`;
   const roles = (d.regs.find((r) => r.person_id === pid)?.roles || me.roles).map(roleLabel).join("／");
   const names = pjmNamesOf(d.roster, me.name).join("、") || "新手 PJM";
+  // 重要嘉賓的 PDF：不含個別培育小組的內容，改放全班儀表板
+  const isGuest = (d.regs.find((r) => r.person_id === pid)?.roles || me.roles).includes("guest");
   const DATE = "20261104", EVENT = "PJM 教練團 經驗反思交流會";
 
   // 內頁配圖：從無臉圖庫隨機抽（依參與者固定排序，重新整理也一樣），整份 PDF 不重複，也不會與封面相同
@@ -98,9 +109,10 @@
   let h = `<div class="page cover" style="${cover ? `background-image:url('${esc(cover)}')` : ""}"><div class="shade"></div><div class="in">
     <div class="tag"><i></i>${EVENT} ${DATE}</div>
     <div>
-      <h1 style="font-size:${names.length > 22 ? 30 : names.length > 12 ? 36 : 44}px">${esc(names)}<br>的成長計畫</h1><div class="who">${esc(me.name)} · ${esc(roles)}${u ? " · " + esc(u) : ""}</div>
+      <h1 style="font-size:${isGuest ? 44 : names.length > 22 ? 30 : names.length > 12 ? 36 : 44}px">${isGuest ? "重要嘉賓<br>回饋紀錄" : esc(names) + "<br>的成長計畫"}</h1><div class="who">${esc(me.name)} · ${esc(roles)}${u ? " · " + esc(u) : ""}</div>
     </div>
-    <div class="letter">當 ${esc(names)} 能夠獨當一面時，我就能<b>${esc(f.fill1 || "＿＿＿")}</b>；即使培育人才過程中會遇到種種挑戰，我仍願意<b>${esc(f.fill2 || "＿＿＿")}</b>，因為<b>${esc(f.fill3 || "＿＿＿")}</b>。</div>
+    ${isGuest && !f.fill1 && !f.fill2 && !f.fill3 ? "<div></div>" : ""}
+    <div class="letter" ${isGuest && !f.fill1 && !f.fill2 && !f.fill3 ? 'style="display:none"' : ""}>當 ${esc(isGuest ? "我培育的 PJM" : names)} 能夠獨當一面時，我就能<b>${esc(f.fill1 || "＿＿＿")}</b>；即使培育人才過程中會遇到種種挑戰，我仍願意<b>${esc(f.fill2 || "＿＿＿")}</b>，因為<b>${esc(f.fill3 || "＿＿＿")}</b>。</div>
   </div></div>`;
 
   // 共通頁：小組討論與個人筆記
@@ -113,7 +125,7 @@
   if (common.length) h += pageOf(common.join(""), 1);
 
   // 每位新手 PJM 一頁：培育起點 → 培育共識 → 可行性檢查
-  rosterRowsOf(d.roster, me.name).filter((x) => x.id > 0).forEach((rw) => {
+  if (!isGuest) rosterRowsOf(d.roster, me.name).filter((x) => x.id > 0).forEach((rw) => {
     const id = String(rw.id), q = (x) => nv("row", id, 7, x), r = (x) => nv("row", id, 8, x), pj = rowPjm(rw);
     const inv = invs.find((i) => i.trainee_id === rw.id);
     let body = '<h1 class="pt">' + esc(pj) + " 的培育計畫</h1>" + '<p class="sub">' + esc(rw.unit) + "｜" + esc(rowPeople(rw).join("、")) + "</p>";
@@ -126,6 +138,11 @@
     h += pageOf(body, 2);
   });
 
+  // 重要嘉賓：加上全班培育計畫儀表板
+  if (isGuest) {
+    const st = dashStats(d.roster, nv, false);
+    h += '<div class="page">' + head() + '<h1 class="pt">全班培育計畫概況</h1><p class="sub">已送出 ' + st.sent + "／" + st.total + ' 組培育小組的培育計畫</p><div class="dash">' + dashHtml(st, false) + "</div></div>";
+  }
   const gf = nv("all", "all", 9, "guest_final");
   if (gf) h += pageOf("<h2>重要嘉賓的回饋</h2><p>" + nl2br(gf) + "</p>", 1);
   doc.innerHTML = h;
