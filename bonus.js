@@ -1,16 +1,22 @@
-// 培育小組完成後的「加分挑戰」：給新手的一句話、預想障礙、預演第一句話、看看其他組、默契小問答
+// 培育小組完成後的「加分挑戰」：給新手的一句話、預想障礙、練習給回饋、看看其他組、默契小問答
 // 依賴 app.js 的 S、me、vs、note、nkey、saveNote、pickRow、myRows、toast 與 common.js 的 rowPeople、rowPjm、esc、nl2br
 
+const BONUS_ST = 7;   // 加分挑戰的資料一律存在「階段 7」，這樣階段 7 和階段 8 看到的是同一份（階段 7 一定先開啟過）
 const BONUS_STARTERS = ["我在你身上看到的亮點是…", "我最期待你接下來…", "當你卡住的時候，可以來找我聊…", "我想謝謝你…", "我相信你一定能…", "如果只能給你一個小建議，我會說…"];
 const BONUS_PREMORTEM = ["兩週後，如果這個培育行動沒有做成，最可能的原因是什麼？", "在目前的工作安排下，最容易被擠掉的是哪一步？", "如果只能保留一個最小的步驟，會是哪一個？", "有哪些人或事，可能讓這件事更順利？", "我們現在可以先做哪一件小事，降低失敗的機會？"];
-const BONUS_REHEARSE = [["意圖", "「我想先說明，今天找你聊是因為…」"], ["給予回饋", "「我觀察到…，對…有這樣的影響，我的感受是…」"], ["尋求回饋", "「你覺得我這樣說，有沒有哪裡需要調整？」"]];
+// 回饋力的三個面向：意圖闡述、給予回饋、尋求回饋
+const BONUS_FEEDBACK = [
+  ["fb1", "意圖闡述", "先說明為什麼想找他聊", "我想先說明，今天找你聊是因為…"],
+  ["fb2", "給予回饋", "具體的行為＋造成的影響＋我的感受", "我觀察到…，對…有這樣的影響，我的感受是…"],
+  ["fb3", "尋求回饋", "邀請對方說說他的想法", "你覺得我這樣說，有沒有哪裡需要調整？"],
+];
 const BONUS_QUIZ = [["food", "最喜歡的食物"], ["nofood", "最不喜歡的食物"], ["country", "最喜歡的國家（旅行）"], ["dream", "最想去的地方"], ["season", "最喜歡的季節"], ["drink", "最常點的飲料"], ["holiday", "放假最想做的事"], ["nick", "小時候的綽號或暱稱"]];
 const BONUS_REACT = [["up", "👍 這個很可行"], ["idea", "💡 我有補充想法"], ["try", "🙋 我們也想試試看"]];
-const BONUS_TABS = [["msg", "給新手的一句話"], ["pre", "預想障礙"], ["rehearse", "預演第一句話"], ["others", "看看其他組"], ["quiz", "默契小問答"]];
+const BONUS_TABS = [["msg", "給新手的一句話"], ["pre", "預想障礙"], ["rehearse", "練習給回饋"], ["others", "看看其他組"], ["quiz", "默契小問答"]];
 
-let bonusTab = "msg", bonusKey = "";
+let bonusTab = "msg";
 
-// 在所有階段的筆記中找某個欄位（不限階段，因為同一個欄位可能在階段 7 或 8 填寫）
+// 在所有階段的筆記中找某個欄位（不限階段）
 function noteAny(scope, key, field) {
   let v = "";
   for (const [k, val] of S.notes) { const p = k.split("|"); if (p[0] === scope && p[1] === String(key) && p[3] === field && (val || "").trim()) v = val; }
@@ -22,28 +28,35 @@ function notesWithPrefix(scope, key, prefix) {
   return out;
 }
 
+// 「按下送出」之後再過 3 秒，才算完成並出現加分挑戰
+function sentLongEnough(iso) {
+  const t = Date.parse(iso || ""); if (isNaN(t)) return false;
+  const left = 3000 - (Date.now() - t);
+  if (left > 0) { setTimeout(() => { try { refresh(); } catch {} }, left + 100); return false; }
+  return true;
+}
+
 function bonusVisible() {
   const st = vs(); if (st !== 7 && st !== 8) return null;
   const r = pickRow(); if (!r) return null;
-  const done = st === 7 ? ["q1", "q2", "q3", "q4", "q5"].every((f) => note("row", String(r.id), 7, f)) : !!note("row", String(r.id), 8, "submitted");
-  return done ? r : null;
+  return sentLongEnough(note("row", String(r.id), st, "submitted")) ? r : null;
 }
 
 function bonusShell(r) {
-  const st = vs(), id = String(r.id), nm = esc(rowPjm(r)), me_ = S.meId;
-  const F = (scope, key, field, rows, ph) => nf(scope, key, st, field, rows, ph);
+  const st = BONUS_ST, id = String(r.id), nm = esc(rowPjm(r)), me_ = S.meId;
+  const F = (field, rows, ph) => nf("row", id, st, field, rows, ph);
   let body = "";
   if (bonusTab === "msg") {
     body = `<p class="hint">選一個開頭，寫一句話給 ${nm}。這句話會放進培育計畫 PDF 的最下方。</p>
       <div class="row" style="margin-bottom:8px">${BONUS_STARTERS.map((s, i) => `<button class="chip" data-starter="${i}">${esc(s)}</button>`).join("")}</div>
-      ${F("row", id, "msg_" + me_, 3, "寫一句話給 " + rowPjm(r))}
-      <div class="q" style="margin-top:12px">夥伴寫給 ${nm} 的話</div><div data-dyn="bonusMsgs"></div>`;
+      ${F("msg_" + me_, 3, "寫一句話給 " + rowPjm(r))}
+      <div class="q" style="margin-top:12px">大家寫給 ${nm} 的話</div><div data-dyn="bonusMsgs"></div>`;
   } else if (bonusTab === "pre") {
     body = `<p class="hint">一起想想可能會卡在哪裡，把想法寫下來，會放進培育計畫 PDF。</p><ul class="hint" style="margin:0 0 8px">${BONUS_PREMORTEM.map((q) => `<li>${esc(q)}</li>`).join("")}</ul>
-      ${F("row", id, "premortem", 5, "我們的預想…")}`;
+      ${F("premortem", 5, "我們的預想…")}`;
   } else if (bonusTab === "rehearse") {
-    body = `<p class="hint">教練試著說出第一次回饋對話的第一句，小組互相給建議。不需要在系統上記錄，口頭練習就好。</p>
-      ${BONUS_REHEARSE.map(([t, s]) => `<div class="card" style="margin:6px 0"><b>${esc(t)}</b><div>${esc(s)}</div></div>`).join("")}`;
+    body = `<p class="hint">想像你要和 ${nm} 聊一次，依照三個步驟練習寫下一則<b>具體的回饋</b>。這是你自己的練習，會放進你的培育計畫 PDF，也可以和夥伴互相分享、給建議。</p>
+      ${BONUS_FEEDBACK.map(([f, t, hint, eg]) => `<div class="card" style="margin:8px 0"><div class="q">${esc(t)}</div><p class="hint" style="margin:0 0 6px">${esc(hint)}　例：「${esc(eg)}」</p>${F(f + "_" + me_, 3)}</div>`).join("")}`;
   } else if (bonusTab === "others") {
     body = `<p class="hint">看看其他小組打算怎麼做，給他們一個回應（匿名）。</p><div data-dyn="bonusOthers"></div>`;
   } else {
@@ -51,7 +64,7 @@ function bonusShell(r) {
       <div class="card" style="margin:6px 0"><div class="q">我的答案</div>${BONUS_QUIZ.map(([k, t]) => `<label style="display:block;margin:6px 0"><span class="hint">${esc(t)}</span><input type="text" data-n="${esc(nkey("person", String(me_), st, "qz_" + k))}"></label>`).join("")}</div>
       <div class="card" style="margin:6px 0"><div class="q">猜猜看</div><div data-dyn="bonusQuiz"></div></div>`;
   }
-  return `<div class="card soft" style="margin-top:18px"><h3 style="margin:0 0 4px">🌿 加分挑戰</h3><p class="hint" style="margin:0 0 8px">你們這組已經完成了，等其他組的時候，可以挑一個玩玩看。</p>
+  return `<div class="card soft" style="margin-top:18px"><h3 style="margin:0 0 4px">🌿 加分挑戰</h3><p class="hint" style="margin:0 0 8px">你們這組已經送出了，等其他組的時候，可以挑一個玩玩看。</p>
     <div class="row" style="margin-bottom:10px">${BONUS_TABS.map(([k, t]) => `<button class="chip ${bonusTab === k ? "on" : ""}" data-btab="${k}">${esc(t)}</button>`).join("")}</div>${body}</div>`;
 }
 
@@ -65,11 +78,13 @@ function bonusRefresh() {
 }
 
 function bonusDyn(r) {
-  const st = vs(), me_ = S.meId;
+  const me_ = S.meId;
   const msgs = document.querySelector('[data-dyn="bonusMsgs"]');
   if (msgs) {
-    const list = notesWithPrefix("row", r.id, "msg_").filter(([f]) => +f.slice(4) !== me_).map(([f, v]) => `<div class="card" style="margin:6px 0"><span class="hint">${esc((S.people.find((p) => p.id === +f.slice(4)) || {}).name || "夥伴")}</span><div>${nl2br(v)}</div></div>`);
-    msgs.innerHTML = list.join("") || '<p class="hint">還沒有夥伴寫，你可以先寫。</p>';
+    // 包含自己寫的，自己的排在最前面
+    const list = notesWithPrefix("row", r.id, "msg_").sort(([a], [b]) => (+a.slice(4) === me_ ? -1 : +b.slice(4) === me_ ? 1 : 0))
+      .map(([f, v]) => `<div class="card" style="margin:6px 0"><span class="hint">${+f.slice(4) === me_ ? "我" : esc((S.people.find((p) => p.id === +f.slice(4)) || {}).name || "夥伴")}</span><div>${nl2br(v)}</div></div>`);
+    msgs.innerHTML = list.join("") || '<p class="hint">還沒有人寫，你可以先寫。</p>';
   }
   const others = document.querySelector('[data-dyn="bonusOthers"]');
   if (others) {
@@ -108,14 +123,14 @@ document.addEventListener("click", (e) => {
   const s = e.target.closest("[data-starter]");
   if (s) { const ta = document.querySelector('#bonusHost textarea'); if (ta && !ta.value.trim()) { ta.value = BONUS_STARTERS[+s.dataset.starter]; ta.dispatchEvent(new Event("input", { bubbles: true })); ta.focus(); } return; }
   const rc = e.target.closest("[data-react]");
-  if (rc) { const [tid, c] = rc.dataset.react.split("|"); const k = nkey("row", tid, vs(), "react_" + S.meId); saveNote(k, S.notes.get(k) === c ? "" : c).then(() => bonusRefresh()); bonusDynSafe(); return; }
+  if (rc) { const [tid, c] = rc.dataset.react.split("|"); const k = nkey("row", tid, BONUS_ST, "react_" + S.meId); saveNote(k, S.notes.get(k) === c ? "" : c).then(() => bonusRefresh()); bonusDynSafe(); return; }
   if (e.target.closest("#qzGo")) {
     const q = document.querySelector('[data-dyn="bonusQuiz"]'); const sel = JSON.parse(q.dataset.sel || "{}");
     const g = document.getElementById("qzGuess").value.trim(); if (!g) { toast("先寫下你的猜測"); return; }
-    saveNote(nkey("person", String(S.meId), vs(), "qg_" + sel.who + "_" + sel.q), g).then(bonusDynSafe); return;
+    saveNote(nkey("person", String(S.meId), BONUS_ST, "qg_" + sel.who + "_" + sel.q), g).then(bonusDynSafe); return;
   }
   const j = e.target.closest("[data-qzj]");
-  if (j) { const q = document.querySelector('[data-dyn="bonusQuiz"]'); const sel = JSON.parse(q.dataset.sel || "{}"); saveNote(nkey("person", String(S.meId), vs(), "qc_" + sel.who + "_" + sel.q), j.dataset.qzj).then(bonusDynSafe); }
+  if (j) { const q = document.querySelector('[data-dyn="bonusQuiz"]'); const sel = JSON.parse(q.dataset.sel || "{}"); saveNote(nkey("person", String(S.meId), BONUS_ST, "qc_" + sel.who + "_" + sel.q), j.dataset.qzj).then(bonusDynSafe); }
 });
 document.addEventListener("change", (e) => {
   if (e.target.id === "qzWho" || e.target.id === "qzQ") {

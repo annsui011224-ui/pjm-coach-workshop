@@ -146,6 +146,9 @@
     const msgs = d.notes.filter((n) => n.scope === "row" && n.scope_key === tid && n.field.startsWith("msg_") && (n.value || "").trim());
     const uniqMsgs = [...new Map(msgs.map((n) => [n.field, n])).values()];
     if (uniqMsgs.length) body += "<h2>夥伴給 " + esc(pj) + " 的一句話</h2>" + uniqMsgs.map((n) => '<p style="margin:6px 0">「' + esc(n.value.trim()) + "」<span class=\"muted\">— " + esc((d.people.find((p) => p.id === +n.field.slice(4)) || {}).name || "夥伴") + "</span></p>").join("");
+    // 練習給回饋（只放自己寫的）
+    const fbs = [["fb1", "意圖闡述"], ["fb2", "給予回饋"], ["fb3", "尋求回饋"]].map(([f, t]) => [t, anyNote(f + "_" + pid)]).filter(([, v]) => (v || "").trim());
+    if (fbs.length) body += "<h2>練習給 " + esc(pj) + " 的回饋</h2><table>" + fbs.map(([t, v]) => row(esc(t), v)).join("") + "</table>";
     const pre = anyNote("premortem");
     if (pre) body += "<h2>預想障礙</h2><p>" + nl2br(pre) + "</p>";
     h += pageOf(body, 2);

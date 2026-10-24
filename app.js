@@ -94,7 +94,7 @@ function render() {
   if (!m || S.showCard === "register") { $app.innerHTML = viewRegister(); bindRegister(); return; }
   if (S.showCard === true || vs() === 0 || vs() === 13) { $app.innerHTML = viewBanner() + viewCard(); bindCard(); return; }
   const VIEWS = { 1: v1, 2: v2, 3: v3, 4: v4, 5: v5, 6: v6, 7: v7, 8: v8, 9: v9, 10: v10, 11: v11, 12: v12 };
-  const BINDS = { 2: bind2, 3: bind3, 4: bind4, 5: bind5, 6: bind6, 8: bind8, 11: bind11, 12: bind12 };
+  const BINDS = { 2: bind2, 3: bind3, 4: bind4, 5: bind5, 6: bind6, 7: bind7, 8: bind8, 11: bind11, 12: bind12 };
   $app.innerHTML = viewBanner() + VIEWS[vs()]();
   const after = BINDS[vs()];
   if (after) after();
@@ -244,10 +244,10 @@ document.addEventListener("change", (e) => {
 
 // 破冰題：同一組看到同一題，任何人按「換一題」大家一起換
 function iceDone(st) {
-  const f = S.future.get(S.meId) || {}, g = me().seat2;
-  if (st === 2) return !!f.image_submitted;
-  if (st === 3) return !!((f.fill1 || "").trim() && (f.fill2 || "").trim() && (f.fill3 || "").trim());
-  if (st === 5) return !!g && !!note("seat", g, 5, "submitted");
+  const g = me().seat2;
+  if (st === 2) return sentLongEnough(note("person", String(S.meId), 2, "sent_at"));
+  if (st === 3) return sentLongEnough(note("person", String(S.meId), 3, "sent_at"));
+  if (st === 5) return !!g && sentLongEnough(note("seat", g, 5, "submitted"));
   return false;
 }
 document.addEventListener("click", (e) => {
@@ -356,7 +356,7 @@ function bind2() {
   bindNameFix();
   const f = S.future.get(S.meId) || {};
   if (f.image_submitted) {
-    document.getElementById("repick").onclick = async () => { S.future.set(S.meId, { ...f, image_submitted: false }); S.pendingPic = f.image_url; await saveFuture(); render(); };
+    document.getElementById("repick").onclick = async () => { S.future.set(S.meId, { ...f, image_submitted: false }); S.pendingPic = f.image_url; await saveFuture(); await saveNote(nkey("person", String(S.meId), 2, "sent_at"), ""); render(); };
     return;
   }
   if (!S.pendingPic && f.image_url) S.pendingPic = f.image_url;
@@ -369,7 +369,7 @@ function bind2() {
   document.getElementById("submitPic").onclick = async () => {
     const cur = S.future.get(S.meId) || { person_id: S.meId };
     S.future.set(S.meId, { ...cur, image_url: S.pendingPic, image_submitted: true });
-    await saveFuture(); render();
+    await saveFuture(); await saveNote(nkey("person", String(S.meId), 2, "sent_at"), new Date().toISOString()); render();
   };
 }
 function updateSel() {
@@ -405,13 +405,25 @@ function v3() {
     <p style="margin:6px 0">${esc(futureLead(pjmNamesOf(S.roster, me().name)))}，我就能</p><textarea data-fx="fill1" rows="2"></textarea>
     <p style="margin:6px 0">即使培育人才過程中會遇到種種挑戰，我仍願意</p><textarea data-fx="fill2" rows="2"></textarea>
     <p style="margin:6px 0">因為</p><textarea data-fx="fill3" rows="2"></textarea>
-    <div class="saved" id="fSaved"></div></div>
+    <div class="saved" id="fSaved"></div>
+    <p class="row"><button class="btn" id="sendLetter">送出</button><span class="saved" id="letterMsg"></span></p></div>
   <div data-dyn="ice"></div>
   <h2>${g ? `${teamName(g)} 的夥伴` : "小組夥伴"}</h2>
   <div data-dyn="gallery"></div>` + foot;
 }
 function bind3() {
   bindNameFix();
+  const sl = document.getElementById("sendLetter");
+  if (sl) {
+    const msg = document.getElementById("letterMsg"), k = nkey("person", String(S.meId), 3, "sent_at");
+    const mark = () => { msg.textContent = note("person", String(S.meId), 3, "sent_at") ? "已送出 ✓（修改後可再按一次）" : ""; };
+    mark();
+    sl.onclick = async () => {
+      const f = S.future.get(S.meId) || {};
+      if (!(f.fill1 || "").trim() || !(f.fill2 || "").trim() || !(f.fill3 || "").trim()) { toast("三個空格都寫完再送出喔"); return; }
+      await saveFuture(); await saveNote(k, new Date().toISOString()); mark(); refresh();
+    };
+  }
   document.querySelectorAll("[data-fx]").forEach((el) => el.addEventListener("input", () => {
     const cur = S.future.get(S.meId) || { person_id: S.meId };
     S.future.set(S.meId, { ...cur, [el.dataset.fx]: el.value }); saveFutureD(); refresh();
@@ -578,7 +590,21 @@ function v7() {
   <div class="card"><div class="q">④ 下一步要做什麼？</div><p class="hint">請選擇一個真實工作情境，並明確分工。</p>
     ${nf(...k("q4"), 3, "真實工作情境與下一步")}
     ${q4Fields(r).map((f) => `<div class="q4row"><div class="q4plants">${f.roles.map((rk) => sprigSvg(ROLES[rk].plant)).join("")}</div><div class="q4body"><p style="margin:2px 0 4px"><b>${esc(f.label)}</b>，要做</p>${nf(...k(f.key), 2)}</div></div>`).join("")}</div>
-  <div class="card"><div class="q">⑤ 預計何時執行？如何知道有進步？</div>${nf(...k("q5"), 3)}</div>` + '<div id="bonusHost"></div>' + foot;
+  <div class="card"><div class="q">⑤ 預計何時執行？如何知道有進步？</div>${nf(...k("q5"), 3)}</div>
+  <div class="card soft"><div class="q">送出 ${nm} 的培育共識</div><p class="hint">第 1–5 題都討論完、由負責填寫的人確認後再送出。送出後約 3 秒，會出現可以玩的「加分挑戰」。</p>
+    <p class="row"><button class="btn" id="sendAlign">送出培育共識</button><span class="saved" id="alignMsg"></span></p></div>` + '<div id="bonusHost"></div>' + foot;
+}
+
+function bind7() {
+  const b = document.getElementById("sendAlign"); if (!b) return;
+  const id = String(S.rowId), msg = document.getElementById("alignMsg");
+  const mark = () => { msg.textContent = note("row", id, 7, "submitted") ? "已送出 ✓（修改後可再按一次）" : ""; };
+  mark();
+  b.onclick = async () => {
+    flushNotes();
+    if (["q1", "q2", "q3", "q4", "q5"].some((f) => !note("row", id, 7, f))) { toast("第 1–5 題都寫完再送出喔"); return; }
+    await saveNote(nkey("row", id, 7, "submitted"), new Date().toISOString()); mark(); refresh();
+  };
 }
 
 function v8() {

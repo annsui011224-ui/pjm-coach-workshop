@@ -93,7 +93,7 @@ function projInventory() {
 }
 
 function projAlign() {
-  const teams = D.roster.filter((r) => r.id > 0), done = teams.filter((r) => ["q1", "q2", "q3", "q4", "q5"].every((x) => nv("row", String(r.id), 7, x))).length;
+  const teams = D.roster.filter((r) => r.id > 0), done = teams.filter((r) => nv("row", String(r.id), 7, "submitted")).length;
   return '<h1 class="p-h1">教練 × PJM 主管<br>對齊培育共識</h1>' + `<ol class="p-list">
     <li>三個月後，希望新手能獨立做到什麼？<small>請描述可觀察的工作行為</small></li><li>本次優先關注哪一項 PJM 能力？</li><li>目前的培育起點</li>
     <li>下一步要做什麼？<small>選一個真實工作情境，並明確分工</small></li><li>預計何時執行？如何知道有進步？</li></ol>` +
@@ -149,15 +149,10 @@ function projPrep() {
 // 有人先完成時，投影畫面下方輪播破冰題（跨產品小組階段）或提示加分挑戰（培育小組階段）
 function projWait(id) {
   let done = 0;
-  if (id === 2) done = attendees().filter((p) => D.future.find((f) => f.person_id === p.id && f.image_submitted)).length;
-  else if (id === 3) done = attendees().filter((p) => D.future.find((f) => f.person_id === p.id && f.fill1)).length;
-  else if (id === 5) done = seatGroups().filter(({ g }) => nv("seat", g, 5, "submitted")).length;
-  else if (id === 7) done = D.roster.filter((r) => r.id > 0 && ["q1", "q2", "q3", "q4", "q5"].every((x) => nv("row", String(r.id), 7, x))).length;
+  if (id === 7) done = D.roster.filter((r) => r.id > 0 && nv("row", String(r.id), 7, "submitted")).length;
   else if (id === 8) done = D.roster.filter((r) => r.id > 0 && nv("row", String(r.id), 8, "submitted")).length;
   if (!done) return "";
-  if (id === 7 || id === 8) return '<div class="p-card p-wait"><div class="p-ctitle"><span>🌿 加分挑戰開放中</span></div><div class="p-note">先完成的小組可以挑一個玩玩看：給新手的一句話・預想障礙・預演第一句話・看看其他組・默契小問答</div></div>';
-  const q = iceRotating(Math.floor(Date.now() / 20000)).replace("【小任務】", "小任務：");
-  return '<div class="p-card p-wait"><div class="p-ctitle"><span>等其他組的時候，一起聊聊</span></div><div class="p-q" style="font-family:var(--serif);font-weight:700">' + esc(q) + "</div></div>";
+  return '<div class="p-card p-wait"><div class="p-ctitle"><span>🌿 加分挑戰開放中</span></div><div class="p-note">先送出的小組可以挑一個玩玩看：給新手的一句話・預想障礙・練習給回饋・看看其他組・默契小問答</div></div>';
 }
 
 const PROJ = { 13: projPrep, 0: projArrival, 1: projPurpose, 2: projPickImage, 3: projLetter, 4: projKS, 5: projDiscuss, 11: projTeamSeating, 6: projInventory, 7: projAlign, 8: projFeasible, 9: projEnergize, 10: projTakeaway, 12: projSurvey };
