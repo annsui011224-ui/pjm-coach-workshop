@@ -94,9 +94,10 @@ function projInventory() {
 
 function projAlign() {
   const teams = D.roster.filter((r) => r.id > 0), done = teams.filter((r) => ["q1", "q2", "q3", "q4", "q5"].every((x) => nv("row", String(r.id), 7, x))).length;
-  return pH1("教練 × PJM 主管對齊培育共識") + `<ol class="p-list">
+  return '<h1 class="p-h1">教練 × PJM 主管<br>對齊培育共識</h1>' + `<ol class="p-list">
     <li>三個月後，希望新手能獨立做到什麼？<small>請描述可觀察的工作行為</small></li><li>本次優先關注哪一項 PJM 能力？</li><li>目前的培育起點</li>
-    <li>下一步要做什麼？<small>選一個真實工作情境，並明確分工</small></li><li>預計何時執行？如何知道有進步？</li></ol>` + pBar(done, teams.length, "已完成的培育小組");
+    <li>下一步要做什麼？<small>選一個真實工作情境，並明確分工</small></li><li>預計何時執行？如何知道有進步？</li></ol>` +
+    `<div class="p-tip"><b>✎ 請小組指派一位成員負責填寫</b>，其他人用討論的方式提供內容，避免共編時互相覆蓋彼此的紀錄。</div>` + pBar(done, teams.length, "已完成的培育小組");
 }
 
 function projFeasible() {

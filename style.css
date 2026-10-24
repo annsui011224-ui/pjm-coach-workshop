@@ -222,3 +222,5 @@ textarea.locked { background: var(--warn); opacity: .85; cursor: not-allowed; }
 .p-svcloud { display: flex; flex-direction: column; }
 .p-cloud { flex: 1; min-height: clamp(260px, 40vh, 560px); position: relative; }
 @media (max-width: 900px) { .p-survey { grid-template-columns: 1fr; } }
+
+.p-tip { background: var(--warn); border-radius: 18px; padding: 14px 22px; margin: 14px 0 8px; font-size: clamp(18px, 2vw, 32px); line-height: 1.6; }

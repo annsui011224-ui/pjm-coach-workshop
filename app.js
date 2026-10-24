@@ -569,6 +569,7 @@ function v7() {
   const r = pickRow(); if (!r) return noRow(7);
   const k = (f) => ["row", String(r.id), 7, f], nm = esc(rowPjm(r));
   return ph(STAGE[7].title, `${rowPjm(r)} 的培育小組：${rowPeople(r).join("、")}`) + rowTabs() + `
+  <div class="card" style="background:var(--warn);border-color:transparent"><b>✎ 請小組指派一位成員負責填寫</b><div class="hint" style="margin:2px 0 0">其他人用討論的方式提供內容，避免共編時互相覆蓋彼此的紀錄。</div></div>
   <details class="ref" open><summary>大家剛才各自的盤點</summary><div data-dyn="teamInv"></div></details>
   <div class="card"><div class="q">① 三個月後，希望 ${nm} 能獨立做到什麼？</div><p class="hint">請描述一個可觀察的工作行為，而不是只寫「提升溝通能力」。</p>${nf(...k("q1"), 3)}</div>
   <div class="card"><div class="q">② 本次優先關注 ${nm} 的哪一項 PJM 能力？</div>${checks(...k("q2"), ABILITIES)}</div>
