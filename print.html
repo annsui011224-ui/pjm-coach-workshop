@@ -115,7 +115,7 @@
       <h1 style="font-size:${isGuest ? 44 : names.length > 22 ? 30 : names.length > 12 ? 36 : 44}px">${isGuest ? "重要嘉賓<br>回饋紀錄" : esc(names) + "<br>的成長計畫"}</h1><div class="who">${esc(me.name)} · ${esc(roles)}${u ? " · " + esc(u) : ""}</div>
     </div>
     ${isGuest && !f.fill1 && !f.fill2 && !f.fill3 ? "<div></div>" : ""}
-    <div class="letter" ${isGuest && !f.fill1 && !f.fill2 && !f.fill3 ? 'style="display:none"' : ""}>當 ${esc(isGuest ? "我培育的 PJM" : names)} 能夠獨當一面時，我就能<b>${esc(f.fill1 || "＿＿＿")}</b>；即使培育人才過程中會遇到種種挑戰，我仍願意<b>${esc(f.fill2 || "＿＿＿")}</b>，因為<b>${esc(f.fill3 || "＿＿＿")}</b>。</div>
+    <div class="letter" ${isGuest && !f.fill1 && !f.fill2 && !f.fill3 ? 'style="display:none"' : ""}>${esc(futureLead(isGuest ? [] : pjmNamesOf(d.roster, me.name)))}，我就能<b>${esc(f.fill1 || "＿＿＿")}</b>；即使培育人才過程中會遇到種種挑戰，我仍願意<b>${esc(f.fill2 || "＿＿＿")}</b>，因為<b>${esc(f.fill3 || "＿＿＿")}</b>。</div>
   </div></div>`;
 
   // 共通頁：小組討論與個人筆記

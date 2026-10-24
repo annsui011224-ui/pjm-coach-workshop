@@ -330,7 +330,7 @@ function v2() {
     <p><button class="btn ghost" id="repick">重新選擇</button></p></div>
   <p class="wait"><span class="dot"></span>請先和小組成員分享。Facilitator 會開啟下一步：寫給未來的自己。</p>`;
   return ph(STAGE[2].title, "") + nameFixCard() + `
-  <div class="card"><div class="q">請選一張圖片，說明當 ${label} 成為能獨當一面的 PJM 時，對你的好處是什麼？</div>
+  <div class="card"><div class="q">請選一張圖片，${esc(pickLead(pjmNamesOf(S.roster, me().name)))}，對你的好處是什麼？</div>
     <p class="hint">點選圖片可以全螢幕放大。選好後按「送出」，再和小組成員分享你的選擇。</p>
     <div class="grid2" id="picGrid"></div>
     <p><button class="btn ghost" id="shuffle">🔀 換一批圖片</button></p></div>
@@ -386,7 +386,7 @@ function v3() {
   return ph(STAGE[3].title, "把剛才的分享，寫成一段話給未來的自己") + nameFixCard() + `
   ${f.image_url ? `<div class="card"><div class="future"><img class="thumb" data-full="${esc(f.image_url)}" src="${esc(f.image_url)}" alt=""><div class="tx"><span class="who">你選的圖片</span><br><span class="hint">點擊可全螢幕放大</span></div></div></div>` : ""}
   <div class="card"><div class="q">寫一段話給未來的自己</div>
-    <p style="margin:6px 0">當 ${label} 能夠獨當一面時，我就能</p><textarea data-fx="fill1" rows="2"></textarea>
+    <p style="margin:6px 0">${esc(futureLead(pjmNamesOf(S.roster, me().name)))}，我就能</p><textarea data-fx="fill1" rows="2"></textarea>
     <p style="margin:6px 0">即使培育人才過程中會遇到種種挑戰，我仍願意</p><textarea data-fx="fill2" rows="2"></textarea>
     <p style="margin:6px 0">因為</p><textarea data-fx="fill3" rows="2"></textarea>
     <div class="saved" id="fSaved"></div></div>
@@ -677,7 +677,7 @@ const DYN = {
     if (!mem.length) return `<p class="hint">同組夥伴的內容會顯示在這裡。</p>`;
     return mem.map((p) => {
       const f = S.future.get(p.id); if (!f) return `<div class="card"><span class="who">${esc(p.name)}</span> <span class="hint">還在選圖…</span></div>`;
-      return `<div class="card"><div class="future">${f.image_url ? `<img src="${esc(f.image_url)}" alt="">` : ""}<div class="tx"><span class="who">${esc(p.name)}</span><br>當 ${esc(pjmNamesOf(S.roster, p.name).join("、") || "新手 PJM")} 能夠獨當一面時，我就能${esc(f.fill1 || "…")}；即使會遇到挑戰，我仍願意${esc(f.fill2 || "…")}，因為${esc(f.fill3 || "…")}。</div></div></div>`;
+      return `<div class="card"><div class="future">${f.image_url ? `<img src="${esc(f.image_url)}" alt="">` : ""}<div class="tx"><span class="who">${esc(p.name)}</span><br>${esc(futureLead(pjmNamesOf(S.roster, p.name)))}，我就能${esc(f.fill1 || "…")}；即使會遇到挑戰，我仍願意${esc(f.fill2 || "…")}，因為${esc(f.fill3 || "…")}。</div></div></div>`;
     }).join("");
   },
   teamInv,

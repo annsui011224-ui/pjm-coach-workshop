@@ -285,3 +285,7 @@ function sprigSvg(kind) {
   leaves += '<path transform="translate(' + f(100 + 24 * Math.sin(2.6) - 6) + ' 30) rotate(8) scale(0.8)" d="M0,0 C-8,-7 -10,-19 0,-23 C10,-19 8,-7 0,0Z" fill="#9cc4a2"/>';
   return wrap("蕨類小枝插圖", stem("M100 236 C108 190 118 120 120 30", 2.2) + leaves);
 }
+
+// 「選圖」與「寫給未來的自己」的句首：有負責培育的新手就帶入名字；沒有（例如重要嘉賓）統一用「所有的 PJM」
+const futureLead = (names) => (names.length ? "當 " + names.join("、") + " 能夠獨當一面時" : "當所有的 PJM 都能獨當一面時");
+const pickLead = (names) => (names.length ? "說明當 " + names.join("、") + " 成為能獨當一面的 PJM 時" : "說明當所有的 PJM 都成為能獨當一面的 PJM 時");
