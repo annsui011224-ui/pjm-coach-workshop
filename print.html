@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的培育計畫</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+  :root { --brand:#0f6b66; --brand2:#2a9d94; --ink:#1f2a33; --muted:#6b7680; --line:#e4e8e8; --soft:#e8f3f1; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin:0; background:#e9ecec; color:var(--ink); font:14px/1.7 "Noto Sans TC","Microsoft JhengHei",sans-serif; }
+  .bar { position:sticky; top:0; z-index:5; background:#fff; border-bottom:1px solid var(--line); padding:10px 16px; display:flex; gap:12px; align-items:center; justify-content:space-between; }
+  .bar button { font:inherit; font-weight:700; background:var(--brand); color:#fff; border:0; border-radius:10px; padding:8px 16px; cursor:pointer; }
+
+  .page { width:210mm; min-height:297mm; margin:16px auto; background:#fff; padding:14mm; break-after:page; box-shadow:0 2px 12px #0002; }
+
+  /* 頁首：小方塊標記 + 名稱 + 日期 */
+  .mh { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--muted); border-bottom:1px solid var(--line); padding-bottom:6px; margin-bottom:14px; letter-spacing:.04em; }
+  .mh i { width:9px; height:9px; background:var(--brand); display:inline-block; }
+  .mh i + i { background:var(--ink); margin-left:-4px; }
+  .mh em { margin-left:auto; font-style:normal; }
+
+  /* 內頁：左文右圖 */
+  .cols { display:grid; grid-template-columns: 1fr 52mm; gap:8mm; align-items:start; }
+  .cols.wide { grid-template-columns: 1fr; }
+  aside .ph { display:block; width:100%; object-fit:cover; border-radius:10px; }
+  aside .ph.a { height:64mm; }
+  aside .ph.b { height:46mm; margin-top:6mm; }
+  aside .cap { font-size:11px; color:var(--muted); margin:4px 2px 0; }
+
+  h1.pt { font-size:28px; line-height:1.25; font-weight:900; margin:0 0 4px; color:var(--ink); }
+  .sub { color:var(--muted); font-size:12px; margin:0 0 8px; }
+  h2 { font-size:17px; font-weight:700; color:var(--brand); margin:20px 0 8px; padding-bottom:4px; border-bottom:2px solid var(--brand); display:flex; align-items:center; gap:8px; }
+  h2::before { content:""; width:8px; height:8px; background:var(--brand); }
+  h2:first-of-type { margin-top:6px; }
+  table { width:100%; border-collapse:collapse; margin:4px 0 8px; break-inside:auto; }
+  tr { break-inside:avoid; }
+  th, td { padding:6px 8px; vertical-align:top; text-align:left; font-size:13px; border-bottom:1px solid var(--line); }
+  th { width:34%; color:var(--brand); font-weight:700; background:#f5faf9; }
+  .muted { color:var(--muted); }
+  p { margin:6px 0; }
+
+  /* 封面：照片滿版 */
+  .cover { padding:0; width:210mm; height:297mm; min-height:297mm; position:relative; overflow:hidden; color:#fff; background:var(--brand) center / cover no-repeat; page: cover; }
+  .cover .shade { position:absolute; inset:0; background:linear-gradient(180deg, rgba(8,24,24,.62) 0%, rgba(8,24,24,.12) 34%, rgba(8,24,24,.05) 52%, rgba(8,24,24,.78) 100%); }
+  .cover .in { position:absolute; inset:0; padding:16mm 15mm; display:flex; flex-direction:column; justify-content:space-between; }
+  .cover .tag { font-size:12px; letter-spacing:.12em; display:flex; align-items:center; gap:8px; }
+  .cover .tag i { width:10px; height:10px; background:#fff; display:inline-block; }
+  .cover h1 { font-size:42px; line-height:1.2; font-weight:900; margin:12px 0 6px; text-shadow:0 2px 14px #0008; }
+  .cover .who { font-size:15px; opacity:.95; text-shadow:0 1px 8px #000a; }
+  .letter { background:rgba(255,255,255,.92); color:var(--ink); border-radius:14px; padding:16px 20px; font-size:17px; line-height:1.75; }
+  .letter b { color:var(--brand); }
+
+  @media print {
+    body { background:#fff; } .bar { display:none; }
+    .page { margin:0; box-shadow:none; width:auto; min-height:0; padding:0; }
+    .cover { width:210mm; height:297mm; }
+  }
+  @page { size:A4; margin:14mm; }
+  @page cover { size:A4; margin:0; }
+</style>
+</head>
+<body>
+<div class="bar"><span id="who">載入中…</span><button onclick="window.print()">列印／存成 PDF</button></div>
+<div id="doc"></div>
+<script src="supabase.min.js"></script>
+<script src="common.js"></script>
+<script>
+(async () => {
+  const pid = parseInt(new URLSearchParams(location.search).get("pid"), 10);
+  const d = await loadAll();
+  const me = d.people.find((p) => p.id === pid);
+  const doc = document.getElementById("doc");
+  if (!me) { doc.innerHTML = `<div class="page">找不到這位參與者。</div>`; return; }
+  document.getElementById("who").textContent = `${me.name} 的培育計畫`;
+  const N = new Map(d.notes.map((n) => [nkey(n.scope, n.scope_key, n.stage, n.field), n.value]));
+  const nv = (...a) => N.get(nkey(...a)) || "";
+  const f = d.future.find((x) => x.person_id === pid) || {};
+  const invs = d.inv.filter((x) => x.person_id === pid).sort((a, b) => a.trainee_id - b.trainee_id);
+  const u = me.unit, g3 = me.seat2;
+  const row = (l, v) => `<tr><th>${l}</th><td>${nl2br(v) || '<span class="muted">（未填寫）</span>'}</td></tr>`;
+  const roles = (d.regs.find((r) => r.person_id === pid)?.roles || me.roles).map(roleLabel).join("／");
+  const names = pjmNamesOf(d.roster, me.name).join("、") || "新手 PJM";
+  const DATE = "20261104", EVENT = "PJM 教練團 經驗反思交流會";
+
+  // 內頁配圖：從無臉圖庫隨機抽（依參與者固定排序，重新整理也一樣），整份 PDF 不重複，也不會與封面相同
+  const cover = f.image_url || "";
+  const pool = INTERIOR_IMAGES.filter((x) => x !== cover);
+  let seed = pid * 9301 + 49297; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  let pi = 0; const photo = () => (pi < pool.length ? pool[pi++] : "");
+  const aside = (n) => { const a = photo(); const b = n > 1 ? photo() : ""; return "<aside>" + (a ? `<img class="ph a" src="${esc(a)}" alt="">` : "") + (b ? `<img class="ph b" src="${esc(b)}" alt="">` : "") + "</aside>"; };
+  const head = () => `<div class="mh"><i></i><i></i><span>${EVENT}</span><em>${DATE}</em></div>`;
+  const pageOf = (body, n = 2) => `<div class="page">${head()}<div class="cols"><div class="main">${body}</div>${aside(n)}</div></div>`;
+
+  // 封面：照片滿版
+  let h = `<div class="page cover" style="${cover ? `background-image:url('${esc(cover)}')` : ""}"><div class="shade"></div><div class="in">
+    <div class="tag"><i></i>${EVENT} ${DATE}</div>
+    <div>
+      <h1 style="font-size:${names.length > 22 ? 30 : names.length > 12 ? 36 : 44}px">${esc(names)}<br>的成長計畫</h1><div class="who">${esc(me.name)} · ${esc(roles)}${u ? " · " + esc(u) : ""}</div>
+    </div>
+    <div class="letter">當 ${esc(names)} 能夠獨當一面時，我就能<b>${esc(f.fill1 || "＿＿＿")}</b>；即使培育人才過程中會遇到種種挑戰，我仍願意<b>${esc(f.fill2 || "＿＿＿")}</b>，因為<b>${esc(f.fill3 || "＿＿＿")}</b>。</div>
+  </div></div>`;
+
+  // 共通頁：小組討論與個人筆記
+  const common = [];
+  if (g3) common.push("<h2>小組討論：資源有限也有機會嘗試的做法（" + esc(g3) + " 組）</h2><table>" + row("我們的答案", nv("seat", g3, 5, "tryable")) + "</table>");
+  const myNotes = nv("person", String(pid), 4, "notes");
+  if (myNotes) common.push("<h2>我的筆記：教練 KS 的分享</h2><p>" + nl2br(myNotes) + "</p>");
+  if (common.length) h += pageOf(common.join(""), 1);
+
+  // 每位新手 PJM 一頁：培育起點 → 培育共識 → 可行性檢查
+  rosterRowsOf(d.roster, me.name).filter((x) => x.id > 0).forEach((rw) => {
+    const id = String(rw.id), q = (x) => nv("row", id, 7, x), r = (x) => nv("row", id, 8, x), pj = rowPjm(rw);
+    const inv = invs.find((i) => i.trainee_id === rw.id);
+    let body = '<h1 class="pt">' + esc(pj) + " 的培育計畫</h1>" + '<p class="sub">' + esc(rw.unit) + "｜" + esc(rowPeople(rw).join("、")) + "</p>";
+    if (inv) body += "<h2>我的培育起點盤點</h2><table>" + row("目前掌握的資訊", inv.has_obs ? "已有具體工作行為觀察" : inv.has_obs === false ? "尚待觀察驗證" : "") +
+      (inv.has_obs ? row("優先能力", (inv.abilities || []).join("、")) + row("三個月後的期待", inv.expectation) : row("了解 PJM 的機會", inv.opportunities)) + "</table>";
+    body += "<h2>培育共識</h2><table>" +
+      row("① 三個月後能獨立做到", q("q1")) + row("② 優先關注的能力", q("q2").split("||").filter(Boolean).join("、")) + row("③ 目前的培育起點", q("q3")) +
+      row("④ 真實情境與下一步", q("q4")) + q4Fields(rw).map((x) => row("　" + esc(x.label) + "，要做", q(x.key))).join("") + row("⑤ 何時執行／如何知道進步", q("q5")) + "</table>" +
+      "<h2>可行性檢查</h2><table>" + F_QUESTIONS.map((x) => { const v = nv(...fLoc(x, rw)); return row(esc(x.q), x.multi ? v.split("||").filter(Boolean).join("、") : v); }).join("") + row("補充", r("fnote")) + "</table>";
+    h += pageOf(body, 2);
+  });
+
+  const gf = nv("all", "all", 9, "guest_final");
+  if (gf) h += pageOf("<h2>重要嘉賓的回饋</h2><p>" + nl2br(gf) + "</p>", 1);
+  doc.innerHTML = h;
+})();
+</script>
+</body>
+</html>
