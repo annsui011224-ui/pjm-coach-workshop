@@ -193,3 +193,10 @@ textarea.locked { background: var(--warn); opacity: .85; cursor: not-allowed; }
 @media (max-width: 900px) { .p-head { grid-template-columns: 1fr; } }
 
 .p-units { grid-template-columns: repeat(auto-fit, minmax(clamp(220px, 15vw, 300px), 1fr)); }
+
+/* 對齊共識第 4 題：各角色欄位旁的植物插畫 */
+.q4row { display: flex; gap: 12px; align-items: flex-start; margin-top: 14px; }
+.q4plants { display: flex; flex-direction: column; gap: 2px; flex: 0 0 64px; align-items: center; }
+.q4plants .sprig { width: 60px; height: 72px; margin: 0; }
+.q4body { flex: 1; min-width: 0; }
+@media (max-width: 480px) { .q4plants { flex-basis: 48px; } .q4plants .sprig { width: 46px; height: 56px; } }

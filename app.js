@@ -558,7 +558,7 @@ function v7() {
   <div class="card"><div class="q">③ 目前的培育起點</div>${radios(...k("q3"), Q5.q3)}</div>
   <div class="card"><div class="q">④ 下一步要做什麼？</div><p class="hint">請選擇一個真實工作情境，並明確分工。</p>
     ${nf(...k("q4"), 3, "真實工作情境與下一步")}
-    ${q4Fields(r).map((f) => `<p style="margin:10px 0 4px"><b>${esc(f.label)}</b>，要做</p>${nf(...k(f.key), 2)}`).join("")}</div>
+    ${q4Fields(r).map((f) => `<div class="q4row"><div class="q4plants">${f.roles.map((rk) => sprigSvg(ROLES[rk].plant)).join("")}</div><div class="q4body"><p style="margin:2px 0 4px"><b>${esc(f.label)}</b>，要做</p>${nf(...k(f.key), 2)}</div></div>`).join("")}</div>
   <div class="card"><div class="q">⑤ 預計何時執行？如何知道有進步？</div>${nf(...k("q5"), 3)}</div>` + foot;
 }
 

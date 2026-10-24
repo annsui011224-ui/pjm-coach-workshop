@@ -188,13 +188,14 @@ const rowPeople = (r) => [...new Set([r.coach, r.pjm_mgr, r.direct_mgr, r.dept_m
 function q4Fields(r) {
   const pjm = rowPjm(r);
   const entries = [["coach", r.coach, pjm, "教練"], ["pjm_mgr", r.pjm_mgr, pjm, "主管"], ["direct_mgr", r.direct_mgr, r.coach, "直接主管"], ["dept_mgr", r.dept_mgr, r.coach, "部級主管"]].filter((e) => e[1]);
-  const byName = new Map();
-  entries.forEach(([, name, target, role]) => {
+  const byName = new Map(), roleKeys = new Map();
+  entries.forEach(([rk, name, target, role]) => {
     const m = byName.get(name) || new Map(); byName.set(name, m);
     m.set(target, [...(m.get(target) || []), role]);
+    roleKeys.set(name, [...(roleKeys.get(name) || []), rk]);   // 這個人在這一列的角色（用來配對植物插圖）
   });
   const out = [];
-  byName.forEach((m, name) => out.push({ key: `q4_${name}`, label: `${name} 身為 ` + [...m.entries()].map(([t, roles]) => `${t} 的${roles.join("與")}`).join("，以及 ") }));
+  byName.forEach((m, name) => out.push({ key: `q4_${name}`, roles: roleKeys.get(name), label: `${name} 身為 ` + [...m.entries()].map(([t, roles]) => `${t} 的${roles.join("與")}`).join("，以及 ") }));
   return out;
 }
 
