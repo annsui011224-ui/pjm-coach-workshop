@@ -82,7 +82,7 @@
   const me = d.people.find((p) => p.id === pid);
   const doc = document.getElementById("doc");
   if (!me) { doc.innerHTML = `<div class="page">找不到這位參與者。</div>`; return; }
-  document.getElementById("who").textContent = `${me.name} 的培育計畫`;
+  document.getElementById("who").textContent = `${me.name} 的培育計畫${new URLSearchParams(location.search).get("v") === "guest" ? "（重要嘉賓版）" : new URLSearchParams(location.search).get("v") === "team" ? "（培育小組版）" : ""}`;
   const N = new Map(d.notes.map((n) => [nkey(n.scope, n.scope_key, n.stage, n.field), n.value]));
   const nv = (...a) => N.get(nkey(...a)) || "";
   const f = d.future.find((x) => x.person_id === pid) || {};
@@ -92,7 +92,8 @@
   const roles = (d.regs.find((r) => r.person_id === pid)?.roles || me.roles).map(roleLabel).join("／");
   const names = pjmNamesOf(d.roster, me.name).join("、") || "新手 PJM";
   // 重要嘉賓的 PDF：不含個別培育小組的內容，改放全班儀表板
-  const isGuest = (d.regs.find((r) => r.person_id === pid)?.roles || me.roles).includes("guest");
+  const ver = new URLSearchParams(location.search).get("v");   // guest = 嘉賓版、team = 培育小組版；沒指定時依身分決定
+  const isGuest = ver === "guest" ? true : ver === "team" ? false : (d.regs.find((r) => r.person_id === pid)?.roles || me.roles).includes("guest");
   const DATE = "20261104", EVENT = "PJM 教練團 經驗反思交流會";
 
   // 內頁配圖：從無臉圖庫隨機抽（依參與者固定排序，重新整理也一樣），整份 PDF 不重複，也不會與封面相同
@@ -142,6 +143,20 @@
   if (isGuest) {
     const st = dashStats(d.roster, nv, false);
     h += '<div class="page">' + head() + '<h1 class="pt">全班培育計畫概況</h1><p class="sub">已送出 ' + st.sent + "／" + st.total + ' 組培育小組的培育計畫</p><div class="dash">' + dashHtml(st, false) + "</div></div>";
+  }
+  // 重要嘉賓：加上工作坊滿意度的整體結果（只含統計，不含任何人的原始答案）
+  if (isGuest) {
+    let sv = null; try { const r = await sb.rpc("pjm_survey_summary"); sv = r.data; } catch {}
+    const labels = Object.fromEntries(SURVEY_Q.map((q) => [q.k, q.q]));
+    let body = '<h1 class="pt">工作坊滿意度結果</h1><p class="sub">' + (sv && sv.n ? "共 " + sv.n + " 份匿名問卷" : "目前尚無問卷回覆") + "</p>";
+    if (sv && sv.n) {
+      body += '<div class="dash">' + ["overall", "useful", "pace", "confidence"].map((k) => {
+        const r = sv.rating[k] || { avg: null, dist: [0, 0, 0, 0, 0] }, avg = r.avg == null ? 0 : +r.avg;
+        return '<div class="card"><div class="row"><span class="q">' + esc(labels[k]) + '</span><b>' + (r.avg == null ? "—" : avg.toFixed(1)) + ' / 5</b></div><div class="bar"><i style="width:' + Math.round((avg / 5) * 100) + '%"></i></div><div class="hint" style="margin-top:4px">' +
+          [5, 4, 3, 2, 1].map((s) => s + " 分 " + (r.dist[s - 1] || 0) + " 人").join("　") + "</div></div>";
+      }).join("") + "</div>";
+    }
+    h += '<div class="page">' + head() + body + "</div>";
   }
   const gf = nv("all", "all", 9, "guest_final");
   if (gf) h += pageOf("<h2>重要嘉賓的回饋</h2><p>" + nl2br(gf) + "</p>", 1);

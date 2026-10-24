@@ -591,13 +591,16 @@ function v9() {
   <div class="card"><p class="hint">嘉賓分享時，把你聽到的回饋記在這裡。每個人各自一份，不會互相覆蓋，facilitator 會在後台彙整。不需要每個人都寫。</p>${nf("person", String(S.meId), 9, "guest_note", 8, "把聽到的回饋記在這裡…")}</div>` + foot;
 }
 
+// 同時是重要嘉賓、又有負責培育小組的人（例如 Casper），可以下載兩種版本
+const bothPdf = () => myRoles().includes("guest") && rosterRowsOf(S.roster, me().name).some((r) => r.id > 0);
+
 function v10() {
   return ph(STAGE[10].title, "這份計畫是你和夥伴今天一起完成的") + `
   <div class="card soft"><h3>你的 PDF 會包含</h3>
   <p style="margin:6px 0">• 封面：你選的圖片與寫給未來自己的話</p>
   <p style="margin:6px 0">• 小組共編的培育做法、培育共識與可行性檢查</p>
   <p style="margin:6px 0">• 重要嘉賓回饋</p></div>
-  <p><a class="btn" href="print.html?pid=${S.meId}" target="_blank">開啟我的培育計畫（可列印／存成 PDF）</a></p>
+  ${bothPdf() ? `<p class="row"><a class="btn" href="print.html?pid=${S.meId}&v=team" target="_blank">開啟培育小組版（可列印／存成 PDF）</a><a class="btn ghost" href="print.html?pid=${S.meId}&v=guest" target="_blank">開啟重要嘉賓版</a></p>` : `<p><a class="btn" href="print.html?pid=${S.meId}" target="_blank">開啟我的培育計畫（可列印／存成 PDF）</a></p>`}
   <p class="hint">在開啟的頁面按「列印／存成 PDF」。之後也可以用同一個網址回來下載。</p>`;
 }
 
