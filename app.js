@@ -245,7 +245,7 @@ document.addEventListener("change", (e) => {
 // 破冰題：同一組看到同一題，任何人按「換一題」大家一起換
 function iceDone(st) {
   const g = me().seat2;
-  if (st === 2) return sentLongEnough(note("person", String(S.meId), 2, "sent_at"));
+  if (st === 2) return !!g && sentLongEnough(note("seat", g, 2, "share_done"));
   if (st === 3) return sentLongEnough(note("person", String(S.meId), 3, "sent_at"));
   if (st === 5) return !!g && sentLongEnough(note("seat", g, 5, "submitted"));
   return false;
