@@ -95,7 +95,7 @@ function pShare() {
   if (!gs.length) { pane.innerHTML = `<div class="card"><p>還沒有分組。請先到「跨產品分組」分頁設定組別。</p></div>`; return; }
   pane.innerHTML = `<p class="hint">題目：剛才 KS 分享的經驗中，有沒有哪一個做法，即使我的資源有限，也有機會嘗試？</p>
   <p class="row"><button class="btn" id="proj">▶ 投影模式（逐組顯示，最後一頁是文字雲）</button><button class="btn ghost" id="projCloud">☁ 直接顯示文字雲</button></p>
-  <div class="grid2" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${gs.map((x) => `<div class="card" style="margin:0"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${esc(x.g)} 組</h3><span class="pill ${x.sent ? "" : "warn"}">${x.sent ? "已送出" : "尚未送出"}</span></div>
+  <div class="grid2" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${gs.map((x) => `<div class="card" style="margin:0"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${teamName(x.g)}</h3><span class="pill ${x.sent ? "" : "warn"}">${x.sent ? "已送出" : "尚未送出"}</span></div>
     <p class="hint" style="margin:4px 0 8px">${esc(x.members.join("、"))}</p><div style="white-space:pre-wrap">${x.text ? esc(x.text) : '<span class="hint">（尚無內容）</span>'}</div></div>`).join("")}</div>`;
   document.getElementById("proj").onclick = () => project(0);
   document.getElementById("projCloud").onclick = () => project(gs.length);
@@ -155,7 +155,7 @@ function project(i) {
       <p class="hint" style="font-size:22px;margin:2vh 0 0">有哪個做法，即使資源有限，也有機會嘗試？</p>
       <div id="cloudHost" style="flex:1;min-height:55vh"></div>`;
   } else {
-    o.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><span class="pill" style="font-size:20px">${esc(x.g)} 組</span> <span class="hint" style="font-size:18px">${esc(x.members.join("、"))}</span></div>${nav}</div>
+    o.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><span class="pill" style="font-size:20px">${teamName(x.g)}</span> <span class="hint" style="font-size:18px">${esc(x.members.join("、"))}</span></div>${nav}</div>
       <p class="hint" style="font-size:22px;margin:3vh 0 2vh">剛才 KS 分享的經驗中，有沒有哪一個做法，即使我的資源有限，也有機會嘗試？</p>
       <div style="font-size:clamp(26px,3.6vw,52px);line-height:1.5;white-space:pre-wrap;font-weight:600">${x.text ? esc(x.text) : '<span class="hint">（尚無內容）</span>'}</div>`;
   }

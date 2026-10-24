@@ -304,3 +304,6 @@ function sprigSvg(kind) {
 // 「選圖」與「寫給未來的自己」的句首：有負責培育的新手就帶入名字；沒有（例如重要嘉賓）統一用「所有的 PJM」
 const futureLead = (names) => (names.length ? "當 " + names.join("、") + " 能夠獨當一面時" : "當所有的 PJM 都能獨當一面時");
 const pickLead = (names) => (names.length ? "說明當 " + names.join("、") + " 成為能獨當一面的 PJM 時" : "說明當所有的 PJM 都成為能獨當一面的 PJM 時");
+
+// 跨產品小組的顯示名稱：Team 1、Team 2…（已跳脫，可直接放進 HTML）
+const teamName = (g) => esc("Team " + g);

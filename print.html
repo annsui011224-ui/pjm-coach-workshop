@@ -120,7 +120,7 @@
 
   // 共通頁：小組討論與個人筆記
   const common = [];
-  if (g3) common.push("<h2>小組討論：資源有限也有機會嘗試的做法（" + esc(g3) + " 組）</h2><table>" + row("我們的答案", nv("seat", g3, 5, "tryable")) + "</table>");
+  if (g3) common.push("<h2>小組討論：資源有限也有機會嘗試的做法（" + teamName(g3) + "）</h2><table>" + row("我們的答案", nv("seat", g3, 5, "tryable")) + "</table>");
   const myNotes = nv("person", String(pid), 4, "notes");
   const guestNote = nv("person", String(pid), 9, "guest_note");
   if (guestNote) common.push("<h2>我的筆記：重要嘉賓的回饋</h2><p>" + nl2br(guestNote) + "</p>");

@@ -25,11 +25,11 @@ function projArrival() {
   const gs = seatGroups(), all = attendees(), ready = all.filter((p) => readyOf(p.id)).length;
   if (!gs.length) return pH1("請找到你所屬組別後入座") + pLead("尚未分組。請到「跨產品分組」分頁設定。");
   const left = pH1("請找到你所屬組別後入座") +
-    pLead("入座後，請在電腦上勾選：<br>☐ " + READY_ITEMS.map(esc).join("　　☐ ")) + pBar(ready, all.length, "已就緒");
+    pLead("入座後，請在電腦上勾選：<br>" + READY_ITEMS.map((t) => "☐ " + esc(t)).join("<br>")) + pBar(ready, all.length, "已就緒");
   const right = '<p class="p-lead p-intro">跟你的小組夥伴介紹你的角色卡</p>' + plantsBand();
   const cards = gs.map(({ g, members }) => {
     const n = members.filter((p) => readyOf(p.id)).length;
-    return '<div class="p-card"><div class="p-ctitle"><span>' + esc(g) + ' 組</span><span class="p-count ' + (n === members.length ? "full" : "") + '">' + n + "／" + members.length + "</span></div>" + members.map((p) => roleChip(p.name, (regOf(p.id) || {}).roles || p.roles, readyOf(p.id))).join("") + "</div>";
+    return '<div class="p-card"><div class="p-ctitle"><span>' + teamName(g) + '</span><span class="p-count ' + (n === members.length ? "full" : "") + '">' + n + "／" + members.length + "</span></div>" + members.map((p) => roleChip(p.name, (regOf(p.id) || {}).roles || p.roles, readyOf(p.id))).join("") + "</div>";
   }).join("");
   return '<div class="p-head"><div class="p-headL">' + left + '</div><div class="p-headR">' + right + "</div></div>" + '<div class="p-grid">' + cards + "</div>";
 }
@@ -63,7 +63,7 @@ function projDiscuss() {
   const gs = seatGroups(), sent = gs.filter(({ g }) => nv("seat", g, 5, "submitted")).length;
   return pH1("小組討論") + pLead("剛才 KS 分享的經驗中，有沒有哪一個做法，<b>即使我的資源有限，也有機會嘗試？</b>") +
     pLead("同組一起討論，在電腦上共編一份答案，討論完按「送出給 facilitator」。") + pBar(sent, gs.length, "已送出的組別") +
-    `<div class="p-grid">${gs.map(({ g, members }) => `<div class="p-card"><div class="p-ctitle"><span>${esc(g)} 組</span><span class="p-count ${nv("seat", g, 5, "submitted") ? "full" : ""}">${nv("seat", g, 5, "submitted") ? "已送出" : "討論中"}</span></div></div>`).join("")}</div>` +
+    `<div class="p-grid">${gs.map(({ g, members }) => `<div class="p-card"><div class="p-ctitle"><span>${teamName(g)}</span><span class="p-count ${nv("seat", g, 5, "submitted") ? "full" : ""}">${nv("seat", g, 5, "submitted") ? "已送出" : "討論中"}</span></div></div>`).join("")}</div>` +
     `<p class="row" style="margin-top:18px"><button class="btn" data-act="share">▶ 投影各組答案</button><button class="btn ghost" data-act="cloud">☁ 文字雲</button></p>`;
 }
 

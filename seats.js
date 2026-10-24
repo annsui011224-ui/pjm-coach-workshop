@@ -21,7 +21,7 @@ function seatBoard(field, title) {
     ${labels.map((g) => {
       const m = groups[g]; let warn = 0, same = 0;
       for (let i = 0; i < m.length; i++) for (let j = i + 1; j < m.length; j++) { if (related.has(pairKey(m[i].name, m[j].name))) warn++; if (m[i].unit && m[i].unit === m[j].unit) same++; }
-      return `<div class="card" style="margin:6px 0"><div class="row" style="justify-content:space-between"><b>${esc(g)} 組</b><span class="hint">${m.length} 人${warn ? ` ・<span style="color:var(--accent)">⚠ ${warn} 組從屬關係同組</span>` : ""}${same ? ` ・同單位 ${same} 組` : ""}</span></div>${m.map(chipHtml).join("")}</div>`;
+      return `<div class="card" style="margin:6px 0"><div class="row" style="justify-content:space-between"><b>${teamName(g)}</b><span class="hint">${m.length} 人${warn ? ` ・<span style="color:var(--accent)">⚠ ${warn} 組從屬關係同組</span>` : ""}${same ? ` ・同單位 ${same} 組` : ""}</span></div>${m.map(chipHtml).join("")}</div>`;
     }).join("") || '<p class="hint">尚未分組</p>'}
     ${none.length ? `<div class="card" style="margin:6px 0;border-style:dashed"><b>未分組</b><br>${none.map(chipHtml).join("")}</div>` : ""}
     ${absent.length ? `<div class="card" style="margin:6px 0;border-style:dashed"><b>請假（不分組）</b><br>${absent.map(chipHtml).join("")}</div>` : ""}</div>`;

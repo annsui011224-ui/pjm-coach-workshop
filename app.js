@@ -407,7 +407,7 @@ function v3() {
     <p style="margin:6px 0">因為</p><textarea data-fx="fill3" rows="2"></textarea>
     <div class="saved" id="fSaved"></div></div>
   <div data-dyn="ice"></div>
-  <h2>${g ? `${esc(g)} 組的夥伴` : "小組夥伴"}</h2>
+  <h2>${g ? `${teamName(g)} 的夥伴` : "小組夥伴"}</h2>
   <div data-dyn="gallery"></div>` + foot;
 }
 function bind3() {
@@ -447,7 +447,7 @@ function v5() {
   const g = me().seat2;
   const mem = S.people.filter((p) => g && p.seat2 === g).map((p) => p.name).join("、");
   return ph(STAGE[5].title, "和小組夥伴一起討論，共編一份答案") + (g ? `
-  <div class="card"><div class="pill warn">你的小組：${esc(g)}</div> <span class="hint">${esc(mem)}</span>
+  <div class="card"><div class="pill warn">你的小組：${teamName(g)}</div> <span class="hint">${esc(mem)}</span>
     <div class="q" style="margin-top:12px">剛才 KS 分享的經驗中，有沒有哪一個做法，即使我的資源有限，也有機會嘗試？</div>
     <p class="hint">同組夥伴看到的是同一份內容，可以一起補充。討論完請按「送出」，facilitator 會請各組輪流分享。</p>
     ${nf("seat", g, 5, "tryable", 7)}
@@ -632,7 +632,7 @@ function seatingCard() {
   const mates = S.people.filter((p) => p.seat2 === g && !p.absent && p.id !== m.id).map((p) => esc(p.name)).join("、");
   const done = isReady(m.id);
   return `<div class="card" style="border-color:var(--brand)"><div class="pill warn">你的組別</div>
-    <div style="font-size:30px;font-weight:700;margin:4px 0">${esc(g)} 組</div>
+    <div style="font-size:30px;font-weight:700;margin:4px 0">${teamName(g)}</div>
     <p style="margin:0">請看大螢幕，找到你所屬的組別後入座。同組夥伴：${mates || "（尚無）"}</p>
     <h3 style="margin-top:14px">入座後，請勾選今天的準備事項</h3>
     <div class="opts">${READY_ITEMS.map((t, i) => `<label class="opt"><input type="checkbox" data-ready="${i}" ${S.notes.get(readyKey(i)) === "1" ? "checked" : ""}><span>${esc(t)}</span></label>`).join("")}</div>
