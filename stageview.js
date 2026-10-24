@@ -24,14 +24,14 @@ function seatGroups() {
 function projArrival() {
   const gs = seatGroups(), all = attendees(), ready = all.filter((p) => readyOf(p.id)).length;
   if (!gs.length) return pH1("請找到你所屬組別後入座") + pLead("尚未分組。請到「跨產品分組」分頁設定。");
-  return pH1("請找到你所屬組別後入座") +
-    pLead("入座後，請在電腦上勾選：<br>☐ " + READY_ITEMS.map(esc).join("　　☐ ")) +
-    pBar(ready, all.length, "已就緒") +
-    `<div class="p-grid">${gs.map(({ g, members }) => {
-      const n = members.filter((p) => readyOf(p.id)).length;
-      return `<div class="p-card"><div class="p-ctitle"><span>${esc(g)} 組</span><span class="p-count ${n === members.length ? "full" : ""}">${n}／${members.length}</span></div>${members.map((p) => chip(p.name, readyOf(p.id))).join("")}</div>`;
-    }).join("")}</div>` +
-    `<p class="p-lead p-intro">跟你的小組夥伴介紹你的角色卡</p>` + plantsBand();
+  const left = pH1("請找到你所屬組別後入座") +
+    pLead("入座後，請在電腦上勾選：<br>☐ " + READY_ITEMS.map(esc).join("　　☐ ")) + pBar(ready, all.length, "已就緒");
+  const right = '<p class="p-lead p-intro">跟你的小組夥伴介紹你的角色卡</p>' + plantsBand();
+  const cards = gs.map(({ g, members }) => {
+    const n = members.filter((p) => readyOf(p.id)).length;
+    return '<div class="p-card"><div class="p-ctitle"><span>' + esc(g) + ' 組</span><span class="p-count ' + (n === members.length ? "full" : "") + '">' + n + "／" + members.length + "</span></div>" + members.map((p) => chip(p.name, readyOf(p.id))).join("") + "</div>";
+  }).join("");
+  return '<div class="p-head"><div class="p-headL">' + left + '</div><div class="p-headR">' + right + "</div></div>" + '<div class="p-grid">' + cards + "</div>";
 }
 
 function projPurpose() {
@@ -76,9 +76,11 @@ function projTeamSeating() {
   const people = (n) => D.people.find((p) => p.name === n);
   const teams = D.roster.filter((r) => r.id > 0);
   const need = new Set(teams.flatMap((r) => rowPeople(r))); const seated = [...need].filter((n) => people(n) && seatedOf(people(n).id)).length;
-  return pH1("回到你的培育小組") + pLead("請看新的座位安排，移動到你的培育小組入座。") + pBar(seated, need.size, "已入座") +
-    teamsByUnit().map(({ u, teams: ts }) => `<h2 class="p-h2">${esc(u)}</h2><div class="p-grid">${ts.map((r) => `<div class="p-card"><div class="p-ctitle"><span>${esc(rowPjm(r))} 的小組</span></div>
-      ${rowPeople(r).map((n) => { const p = people(n); return chip(n + (p?.absent ? "（請假）" : ""), p && seatedOf(p.id)); }).join("")}</div>`).join("")}</div>`).join("") + plantsBand();
+  const left = pH1("回到你的培育小組") + pLead("請看新的座位安排，移動到你的培育小組入座。") + pBar(seated, need.size, "已入座");
+  const units = teamsByUnit().map(({ u, teams: ts }) => '<section class="p-unit"><h2 class="p-h2">' + esc(u) + '</h2><div class="p-ucards">' + ts.map((r) =>
+    '<div class="p-card"><div class="p-ctitle"><span>' + esc(rowPjm(r)) + " 的小組</span></div>" +
+    rowPeople(r).map((n) => { const p = people(n); return chip(n + (p && p.absent ? "（請假）" : ""), p && seatedOf(p.id)); }).join("") + "</div>").join("") + "</div></section>").join("");
+  return '<div class="p-head"><div class="p-headL">' + left + '</div><div class="p-headR">' + plantsBand() + "</div></div>" + '<div class="p-units">' + units + "</div>";
 }
 
 function projInventory() {
@@ -196,13 +198,13 @@ function fitProjection() {
   if (!root || !outer || !inner) return;
   if (document.fullscreenElement !== root) { inner.style.transform = ""; inner.style.width = ""; return; }
   const availH = outer.clientHeight;
-  let lo = 0.15, hi = 1.5;
-  for (let i = 0; i < 14; i++) {
-    const s = (lo + hi) / 2;
+  // 由大到小逐步試：內容變寬時欄數會改變，高度不一定單調，所以不用二分法
+  let best = 0.15;
+  for (let s = 1.5; s >= 0.15; s -= 0.02) {
     inner.style.width = 100 / s + "%"; inner.style.transform = "scale(" + s + ")";
-    if (inner.offsetHeight * s <= availH) lo = s; else hi = s;
+    if (inner.offsetHeight * s <= availH) { best = s; break; }
   }
-  inner.style.width = 100 / lo + "%"; inner.style.transform = "scale(" + lo + ")";
+  inner.style.width = 100 / best + "%"; inner.style.transform = "scale(" + best + ")";
 }
 document.addEventListener("fullscreenchange", () => setTimeout(fitProjection, 60));
 window.addEventListener("resize", () => fitProjection());

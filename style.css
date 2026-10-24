@@ -181,3 +181,15 @@ textarea.locked { background: var(--warn); opacity: .85; cursor: not-allowed; }
 /* 全螢幕時，下方固定預留給「上一階段／下一階段」列的空間，內容不會被它蓋住 */
 .stageRight:fullscreen { padding-bottom: 116px; }
 .stageRight:fullscreen .p-nav { bottom: 14px; }
+
+/* 投影頁：標題區與角色植物並排，座位區使用整個寬度 */
+.p-head { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px 40px; align-items: center; margin-bottom: 8px; }
+.p-headR .p-plants { margin: 0; }
+.p-headR .p-plants .sprig { width: clamp(56px, 8vw, 150px); }
+.p-headR .p-intro { margin: 0 0 4px; }
+.p-units { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(240px, 24vw, 460px), 1fr)); gap: 8px 28px; align-items: start; }
+.p-ucards { display: grid; gap: 10px; }
+.p-unit .p-h2 { margin: 10px 0 6px; }
+@media (max-width: 900px) { .p-head { grid-template-columns: 1fr; } }
+
+.p-units { grid-template-columns: repeat(auto-fit, minmax(clamp(220px, 15vw, 300px), 1fr)); }

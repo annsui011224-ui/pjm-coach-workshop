@@ -24,7 +24,7 @@ function dashHtml(s, big) {
   const pct = (n, t) => (t ? Math.round((n / t) * 100) : 0);
   const bars = (items, total, color, u) => items.map((x) => {
     const p = pct(x.n, total);
-    return `<div style="margin:${big ? 10 : 6}px 0"><div class="row" style="justify-content:space-between;gap:8px;font-size:${big ? 22 : 14}px"><span>${esc(x.label)}</span><b>${x.n} ${u || "組"}・${p}%</b></div>
+    return `<div style="margin:${big ? 10 : 6}px 0;break-inside:avoid"><div class="row" style="justify-content:space-between;gap:8px;font-size:${big ? 22 : 14}px"><span>${esc(x.label)}</span><b>${x.n} ${u || "組"}・${p}%</b></div>
       <div class="bar" style="height:${big ? 18 : 10}px"><i style="width:${p}%;background:${color || "var(--brand)"}"></i></div></div>`;
   }).join("");
   const stat = (n, t, label) => `<div class="card" style="margin:0;text-align:center"><div style="font-size:${big ? 64 : 40}px;font-weight:700;color:var(--brand);line-height:1.1">${pct(n, t)}%</div>
@@ -34,7 +34,7 @@ function dashHtml(s, big) {
   return `<div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(${big ? 260 : 200}px,1fr));gap:12px">
       ${stat(s.sent, s.total, "已送出培育計畫")}${stat(s.withAb, den, "已設定想發展的能力")}${stat(s.q3[0].n, den, "已有具體觀察")}</div>
     ${h("八大能力：各被選為優先培育的比例")}<p class="hint" style="font-size:${big ? 18 : 13}px;margin:0">以已設定能力的 ${s.withAb} 組培育小組為 100%（可複選，加總會超過 100%）</p>
-    <div class="card">${bars(s.abilities.slice().sort((a, b) => b.n - a.n), s.withAb)}</div>
+    <div class="card" style="${big ? "columns:2;column-gap:36px" : ""}">${bars(s.abilities.slice().sort((a, b) => b.n - a.n), s.withAb)}</div>
     ${h("可行性檢查：各題各選項的回答狀況")}
     <div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(${big ? 380 : 280}px,1fr));gap:12px">${s.qs.map((q, i) => `<div class="card" style="margin:0"><div class="q" style="font-size:${big ? 22 : 16}px">${i + 1}. ${esc(q.q)}</div><p class="hint" style="font-size:${big ? 16 : 13}px;margin:0">共 ${q.total} ${q.unit}回答${q.multi ? "（可複選）" : ""}</p>${bars(q.opts, q.total, "var(--accent)", q.unit === "位教練" ? "位" : "組")}</div>`).join("")}</div>`;
 }
