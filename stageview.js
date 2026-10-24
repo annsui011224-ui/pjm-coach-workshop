@@ -30,7 +30,8 @@ function projArrival() {
     `<div class="p-grid">${gs.map(({ g, members }) => {
       const n = members.filter((p) => readyOf(p.id)).length;
       return `<div class="p-card"><div class="p-ctitle"><span>${esc(g)} 組</span><span class="p-count ${n === members.length ? "full" : ""}">${n}／${members.length}</span></div>${members.map((p) => chip(p.name, readyOf(p.id))).join("")}</div>`;
-    }).join("")}</div>`;
+    }).join("")}</div>` +
+    `<p class="p-lead p-intro">跟你的小組夥伴介紹你的角色卡</p>` + plantsBand();
 }
 
 function projPurpose() {
@@ -77,7 +78,7 @@ function projTeamSeating() {
   const need = new Set(teams.flatMap((r) => rowPeople(r))); const seated = [...need].filter((n) => people(n) && seatedOf(people(n).id)).length;
   return pH1("回到你的培育小組") + pLead("請看新的座位安排，移動到你的培育小組入座。") + pBar(seated, need.size, "已入座") +
     teamsByUnit().map(({ u, teams: ts }) => `<h2 class="p-h2">${esc(u)}</h2><div class="p-grid">${ts.map((r) => `<div class="p-card"><div class="p-ctitle"><span>${esc(rowPjm(r))} 的小組</span></div>
-      ${rowPeople(r).map((n) => { const p = people(n); return chip(n + (p?.absent ? "（請假）" : ""), p && seatedOf(p.id)); }).join("")}</div>`).join("")}</div>`).join("");
+      ${rowPeople(r).map((n) => { const p = people(n); return chip(n + (p?.absent ? "（請假）" : ""), p && seatedOf(p.id)); }).join("")}</div>`).join("")}</div>`).join("") + plantsBand();
 }
 
 function projInventory() {
@@ -181,7 +182,8 @@ async function paintStage() {
   const nav = document.getElementById("navLabel"); if (nav) nav.textContent = `${cur}／${STAGES.length - 1}　${STAGE[D.stage].title}`;
   const pv = document.getElementById("navPrev"), nx = document.getElementById("navNext"); if (pv) pv.disabled = cur <= 0; if (nx) nx.disabled = cur >= STAGES.length - 1;
   if (D.stage === 12) { try { const { data } = await sb.rpc("pjm_admin_survey", { p: PASS }); surveyRows = data || []; } catch { surveyRows = surveyRows || []; } }
-  body.innerHTML = (PROJ[D.stage] || (() => ""))();
+  const html = (PROJ[D.stage] || (() => ""))(), art = ART[D.stage] ? ART[D.stage]() : "";
+  body.innerHTML = art ? '<div class="p-split"><div class="p-main">' + html + '</div><div class="p-art">' + art + "</div></div>" : html;
   body.querySelectorAll("[data-act]").forEach((b) => (b.onclick = () => {
     const n = shareGroups().length; if (b.dataset.act === "share") project(0); else project(n);
   }));
