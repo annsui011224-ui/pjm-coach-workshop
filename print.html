@@ -156,6 +156,9 @@
           [5, 4, 3, 2, 1].map((s) => s + " 分 " + (r.dist[s - 1] || 0) + " 人").join("　") + "</div></div>";
       }).join("") + "</div>";
     }
+    // 開放題：facilitator 整理並發布後才會出現
+    const textBlock = (q, v) => (v ? "<h2>" + esc(q) + "</h2><p>" + nl2br(v) + "</p>" : "");
+    body += textBlock("今天最有收穫的是什麼？", nv("all", "all", 12, "survey_gain")) + textBlock("有什麼建議，可以讓工作坊更好？", nv("all", "all", 12, "survey_improve"));
     h += '<div class="page">' + head() + body + "</div>";
   }
   const gf = nv("all", "all", 9, "guest_final");

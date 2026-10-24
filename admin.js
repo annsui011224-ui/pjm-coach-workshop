@@ -187,6 +187,30 @@ function pOut() {
     <p class="row"><button class="btn" id="gfSave">儲存並發布</button><button class="btn ghost" id="gfCopy">以現場筆記為草稿</button></p></div>`;
   document.getElementById("gfSave").onclick = async () => { await rpc("pjm_admin_set_note", { sc: "all", sk: "all", st: 9, f: "guest_final", v: document.getElementById("gf").value }); toast("已發布"); load(true); };
   document.getElementById("gfCopy").onclick = () => { document.getElementById("gf").value = guestNotes().map((n) => "・" + n.text.replace(/\n+/g, " ")).join("\n"); };
+  surveyTexts(pane);
+}
+
+// 滿意度問卷的開放題：facilitator 檢視逐字回覆後整理，發布後才會放進嘉賓版 PDF
+const SV_TEXT = [{ k: "gain", q: "今天最有收穫的是什麼？", f: "survey_gain" }, { k: "improve", q: "有什麼建議，可以讓工作坊更好？", f: "survey_improve" }];
+async function surveyTexts(pane) {
+  let rows = [];
+  try { const r = await sb.rpc("pjm_admin_survey", { p: PASS }); rows = r.data || []; } catch {}
+  if (tab !== "out") return;
+  const box = document.createElement("div");
+  box.innerHTML = '<h2>問卷開放題整理（放進嘉賓版 PDF）</h2><p class="hint">共 ' + rows.length + " 份匿名問卷。以下是逐字回覆，請整理成要給嘉賓看的文字，按「儲存並發布」後才會出現在嘉賓版 PDF。</p>" +
+    SV_TEXT.map((s) => {
+      const raw = rows.map((r) => (r.answers[s.k] || "").trim()).filter(Boolean);
+      return '<div class="card"><b>' + esc(s.q) + '</b><details class="ref"><summary>逐字回覆（' + raw.length + " 則）</summary>" +
+        (raw.length ? raw.map((t) => '<div class="card" style="margin:6px 0;padding:8px 12px;white-space:pre-wrap">' + esc(t) + "</div>").join("") : '<p class="hint">尚無回覆</p>') + "</details>" +
+        '<textarea id="sv_' + s.k + '" rows="6">' + esc(nv("all", "all", 12, s.f)) + "</textarea>" +
+        '<p class="row"><button class="btn" data-svsave="' + s.k + '">儲存並發布</button><button class="btn ghost" data-svdraft="' + s.k + '">以逐字回覆為草稿</button></p></div>';
+    }).join("");
+  pane.appendChild(box);
+  SV_TEXT.forEach((s) => {
+    const raw = rows.map((r) => (r.answers[s.k] || "").trim()).filter(Boolean);
+    box.querySelector('[data-svdraft="' + s.k + '"]').onclick = () => { document.getElementById("sv_" + s.k).value = raw.map((t) => "・" + t.replace(/\n+/g, " ")).join("\n"); };
+    box.querySelector('[data-svsave="' + s.k + '"]').onclick = async () => { await rpc("pjm_admin_set_note", { sc: "all", sk: "all", st: 12, f: s.f, v: document.getElementById("sv_" + s.k).value }); toast("已發布"); await load(true); };
+  });
 }
 
 start();
