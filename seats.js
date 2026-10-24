@@ -28,7 +28,7 @@ function seatBoard(field, title) {
 }
 
 async function regroup(silent) {
-  const attend = D.people.filter((p) => !p.absent).map((p) => ({ name: p.name, unit: p.unit }));
+  const attend = D.people.filter((p) => !p.absent).map((p) => ({ name: p.name, unit: p.unit, role: primaryOf((regOf(p.id) || {}).roles || p.roles) }));
   if (!silent && D.people.some((p) => p.seat2) && !confirm("會覆蓋目前的分組，確定要重新隨機分組嗎？")) return false;
   await rpc("pjm_admin_set_seats", { which: 2, assignments: autoGroup(attend, relatedPairs(D.rows), null).assignments });
   toast(silent ? "已自動分組" : "已重新分組"); await load(true);

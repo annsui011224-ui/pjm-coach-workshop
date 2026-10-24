@@ -27,12 +27,22 @@ function groupSizes(n, min = 4, max = 6) {
   return Array.from({ length: k }, (_, i) => base + (i < extra ? 1 : 0));
 }
 
+// 成本越低越好：
+//  1000  有從屬關係的兩人同組
+//   500  該組沒有任何教練
+//   200  兩位重要嘉賓同組（嘉賓要平均分散）
+//    10  同產品單位的兩人同組
+//     6  相同角色的兩人同組（讓每組盡量有不同角色）
+//     4  上一輪已經同組過（想換新夥伴時）
 function groupCost(groups, related, prev) {
   let c = 0;
   groups.forEach((g) => {
+    if (!g.some((p) => p.role === "coach")) c += 500;
     for (let i = 0; i < g.length; i++) for (let j = i + 1; j < g.length; j++) {
       const a = g[i], b = g[j];
       if (related.has(pairKey(a.name, b.name))) c += 1000;
+      if (a.role === "guest" && b.role === "guest") c += 200;
+      else if (a.role && a.role === b.role) c += 6;
       if (a.unit && a.unit === b.unit) c += 10;
       if (prev && prev.has(pairKey(a.name, b.name))) c += 4;
     }
@@ -40,9 +50,9 @@ function groupCost(groups, related, prev) {
   return c;
 }
 
-// attendees: [{name, unit}]；prev: 先前同組的配對（可選，用來盡量換新夥伴）
+// attendees: [{name, unit, role}]（role 為主要角色：guest／coach／pjm_mgr／direct_mgr／dept_mgr）；prev: 先前同組的配對（可選，用來盡量換新夥伴）
 // 回傳 { assignments: {name: "1"}, groups: [[...]], cost }
-function autoGroup(attendees, related, prev, ms = 400) {
+function autoGroup(attendees, related, prev, ms = 700) {
   const sizes = groupSizes(attendees.length);
   if (!sizes.length) return { assignments: {}, groups: [], cost: 0 };
   const start = performance.now();
