@@ -177,13 +177,16 @@
   if (gf) h += pageOf("<h2>重要嘉賓的回饋</h2><p>" + nl2br(gf) + "</p>", 1);
   // 工作坊剪影：大合照＋有拍到自己這一組的照片
   let allPhotos = []; try { const r = await sb.from("pjm_photos").select("*").order("id"); allPhotos = r.data || []; } catch {}
-  const mine = allPhotos.filter((x) => x.tags.includes("all") || (me.seat2 && x.tags.includes(me.seat2)));
+  const myUnits = new Set([me.unit, ...rosterRowsOf(d.roster, me.name).map((r) => r.unit)].filter(Boolean));
+  const isMineUnit = (x) => x.tags.some((t) => t.startsWith("unit:") && myUnits.has(t.slice(5)));
+  const mine = allPhotos.filter((x) => x.tags.includes("all") || (me.seat2 && x.tags.includes(me.seat2)) || isMineUnit(x));
   const purl = (pth) => SUPABASE_URL + "/storage/v1/object/public/pjm-photos/" + pth;
   if (mine.length) {
-    const big = mine.filter((x) => x.tags.includes("all")), grp = mine.filter((x) => !x.tags.includes("all"));
+    const big = mine.filter((x) => x.tags.includes("all")), grp = mine.filter((x) => !x.tags.includes("all") && me.seat2 && x.tags.includes(me.seat2)), uni = mine.filter((x) => !x.tags.includes("all") && !(me.seat2 && x.tags.includes(me.seat2)));
     h += '<div class="page">' + head() + '<h1 class="pt">工作坊剪影</h1><p class="sub">' + EVENT + " " + DATE + "</p>" +
       (big.length ? '<h2>大合照</h2><div class="phbig">' + big.map((x) => '<img src="' + esc(purl(x.path)) + '" alt="">').join("") + "</div>" : "") +
-      (grp.length ? "<h2>" + (me.seat2 ? teamName(me.seat2) + " 的照片" : "小組照片") + '</h2><div class="phgrid">' + grp.map((x) => '<img src="' + esc(purl(x.path)) + '" alt="">').join("") + "</div>" : "") + "</div>";
+      (grp.length ? "<h2>" + teamName(me.seat2) + " 的照片</h2>" + '<div class="phgrid">' + grp.map((x) => '<img src="' + esc(purl(x.path)) + '" alt="">').join("") + "</div>" : "") +
+      [...myUnits].map((u) => { const ps = uni.filter((x) => x.tags.includes("unit:" + u)); return ps.length ? "<h2>" + esc(u) + " 培育小組的照片</h2>" + '<div class="phgrid">' + ps.map((x) => '<img src="' + esc(purl(x.path)) + '" alt="">').join("") + "</div>" : ""; }).join("") + "</div>";
   }
   doc.innerHTML = h;
 })();
