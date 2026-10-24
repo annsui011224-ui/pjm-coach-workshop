@@ -493,7 +493,7 @@ function v6() {
   <div id="invNo" class="card" style="display:none">
     <div class="q">接下來有哪些機會，可以幫助你更了解 ${nm}？</div>
     <textarea id="invOpp" rows="4">${esc(i.opportunities || "")}</textarea></div>
-  <div class="saved" id="invSaved"></div>` + foot;
+  <div class="saved" id="invSaved"></div>` + '<div data-dyn="invPeers"></div>' + foot;
 }
 let invTimer = null;
 async function saveInv() {
@@ -508,7 +508,7 @@ async function saveInv() {
     expectation: document.getElementById("invExp").value, opportunities: document.getElementById("invOpp").value,
     updated_at: new Date().toISOString(),
   };
-  S.inv.set(S.meId + "|" + invRowId, row);
+  S.inv.set(S.meId + "|" + invRowId, row); refresh();
   const { error } = await sb.from("pjm_inventory").upsert(row);
   const el = document.getElementById("invSaved"); if (el) el.textContent = error ? "尚未儲存" : "已自動儲存 ✓";
 }
@@ -691,6 +691,22 @@ const DYN = {
     const st = vs(), g = me().seat2; if (!g || !iceDone(st)) return "";
     const n = parseInt(note("seat", g, st, "chat_n") || "0", 10) || 0, q = iceQuestion(g, st, n);
     return '<div class="card soft ice"><div class="row" style="justify-content:space-between"><span class="pill warn">等其他組的時候，一起聊聊</span>' + (q.kind === "task" ? '<span class="pill">小任務</span>' : "") + '</div><div class="ice-q">' + esc(q.text.replace("【小任務】", "")) + '</div><p class="row" style="margin:6px 0 0"><button class="btn ghost" id="iceNext">換一題</button><span class="hint">同組夥伴的畫面會一起換題</span></p></div>';
+  },
+  // 自己的盤點寫完後，可以看同一個培育小組夥伴目前的填寫狀況
+  invPeers() {
+    const r = S.roster.find((x) => x.id === invRowId); if (!r) return "";
+    const done = (i) => !!i && i.has_obs !== null && i.has_obs !== undefined && !!String(i.has_obs ? i.expectation : i.opportunities || "").trim();
+    const status = (i) => (!i ? "未開始" : done(i) ? "已完成" : "填寫中");
+    const mates = rowPeople(r).map((n) => S.people.find((p) => p.name === n)).filter((p) => p && p.id !== S.meId);
+    if (!mates.length) return "";
+    if (!done(S.inv.get(S.meId + "|" + r.id))) return '<div class="card" style="margin-top:16px"><h3 style="margin:0 0 4px">🔒 同組夥伴的填寫狀況</h3><p class="hint" style="margin:0">寫完你自己的盤點後，就可以看到同組夥伴目前填寫到哪裡。</p></div>';
+    return '<h2>同組夥伴的填寫狀況</h2><p class="hint">這是 ' + esc(rowPjm(r)) + " 的培育小組，內容會即時更新。</p>" + mates.map((p) => {
+      const i = S.inv.get(p.id + "|" + r.id), s = status(i);
+      const detail = !i || i.has_obs === null || i.has_obs === undefined ? "" : i.has_obs
+        ? "<div><b>已有具體觀察</b>　優先能力：" + esc((i.abilities || []).join("、") || "—") + "</div><div><b>三個月後期待：</b>" + nl2br(i.expectation || "—") + "</div>"
+        : "<div><b>目前還沒有具體觀察</b></div><div><b>了解 PJM 的機會：</b>" + nl2br(i.opportunities || "—") + "</div>";
+      return '<div class="card" style="margin:8px 0"><div class="row" style="justify-content:space-between">' + roleChip(p.name, rowRolesOf(r, p.name), s === "已完成", true) + '<span class="pill ' + (s === "已完成" ? "" : "warn") + '">' + s + "</span></div>" + (detail ? '<div style="margin-top:6px">' + detail + "</div>" : "") + "</div>";
+    }).join("");
   },
   gallery() {
     const g = me().seat2;
