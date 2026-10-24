@@ -102,8 +102,15 @@ function projAlign() {
 
 function projFeasible() {
   const teams = D.roster.filter((r) => r.id > 0), done = teams.filter((r) => ["f1", "f2", "f3"].every((f) => nv("row", String(r.id), 8, f))).length;
-  return pH1("培育計畫可行性檢查") + `<ol class="p-list">${F_QUESTIONS.map((q) => `<li>${esc(q.q)}</li>`).join("")}</ol>` +
-    '<div class="p-tip">' + WRITER_TIP + "</div>" + pBar(done, teams.length, "已完成的培育小組") + `<p class="p-sub">全部確認後，請按「送出培育計畫」。</p>`;
+  const teamQ = F_QUESTIONS.filter((q) => !q.perCoach), coachQ = F_QUESTIONS.filter((q) => q.perCoach);
+  const li = (qs) => qs.map((q) => "<li>" + esc(q.q) + "</li>").join("");
+  return pH1("培育計畫可行性檢查") +
+    '<div class="p-sec"><div class="p-sechead"><span class="p-tag">小組共同填寫</span>第 1–' + teamQ.length + " 題：全組共用一份答案</div>" +
+    '<ol class="p-list">' + li(teamQ) + "</ol>" + '<div class="p-tip">' + WRITER_TIP + "</div></div>" +
+    '<div class="p-sec p-sec-coach"><div class="p-sechead"><span class="p-tag coach">教練個人填寫</span>第 ' + (teamQ.length + 1) + "–" + F_QUESTIONS.length + " 題：每位教練都要自己回答</div>" +
+    '<ol class="p-list" start="' + (teamQ.length + 1) + '">' + li(coachQ) + "</ol>" +
+    '<div class="p-tip p-tip-coach"><b>★ 教練請注意</b>：就算這一組不是由你負責打字，這兩題也要你自己填寫，不要漏掉。</div></div>' +
+    pBar(done, teams.length, "已完成的培育小組") + '<p class="p-sub">全部確認後，請按「送出培育計畫」。</p>';
 }
 
 function projEnergize() {

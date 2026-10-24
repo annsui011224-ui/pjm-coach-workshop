@@ -584,11 +584,18 @@ function v7() {
 function v8() {
   const r = pickRow(); if (!r) return noRow(8);
   const k = (f) => ["row", String(r.id), 8, f];
+  const isCoach = r.coach === me().name && myRoles().includes("coach");
+  const teamQ = F_QUESTIONS.filter((x) => !x.perCoach), coachQ = F_QUESTIONS.filter((x) => x.perCoach);
+  const qCard = (x, i) => '<div class="card"><div class="q">' + (i + 1) + ". " + esc(x.q) + "</div>" +
+    (x.perCoach && S.roster.filter((y) => y.row_id === r.row_id && y.id > 0).length > 1 ? '<p class="hint">' + esc(r.coach) + " 教練帶多位新手，這題只需回答一次，每位新手頁面的答案相同。</p>" : "") +
+    (x.multi ? checks(...fLoc(x, r), x.opts) : radios(...fLoc(x, r), x.opts)) + "</div>";
+  const teamSec = '<section class="sec sec-team"><div class="sechead"><span class="pill">小組共同填寫</span><span class="hint">第 1–' + teamQ.length + " 題，全組共用一份答案</span></div>" +
+    '<div class="card" style="background:var(--warn);border-color:transparent">' + WRITER_TIP + "</div>" + teamQ.map((x, i) => qCard(x, i)).join("") +
+    '<div class="card"><div class="q">補充說明（選填）</div>' + nf(...k("fnote"), 3) + "</div></section>";
+  const coachSec = isCoach ? '<section class="sec sec-coach"><div class="sechead"><span class="pill warn">教練個人填寫</span><span class="hint">第 ' + (teamQ.length + 1) + "–" + F_QUESTIONS.length + " 題，每位教練都要自己回答</span></div>" +
+    '<div class="card" style="background:var(--warn);border-color:transparent"><b>★ 身為教練的你，就算這一組不是由你負責打字，也請自己回答下面兩題，不要漏掉。</b></div>' + coachQ.map((x, i) => qCard(x, teamQ.length + i)).join("") + "</section>" : "";
   return ph(STAGE[8].title, `${rowPjm(r)} 的培育小組`) + rowTabs() + `
-  <div class="card" style="background:var(--warn);border-color:transparent">${WRITER_TIP}</div>
-  <details class="ref" open><summary>回看：階段 7 的培育共識（即時更新）</summary><div data-dyn="stage5"></div></details>
-  ${F_QUESTIONS.filter((x) => !x.perCoach || (r.coach === me().name && myRoles().includes("coach"))).map((x, i) => `<div class="card"><div class="q">${i + 1}. ${esc(x.q)}</div>${x.perCoach && S.roster.filter((y) => y.row_id === r.row_id && y.id > 0).length > 1 ? `<p class="hint">${esc(r.coach)} 教練帶多位新手，這題只需回答一次，每位新手頁面的答案相同。</p>` : ""}${x.multi ? checks(...fLoc(x, r), x.opts) : radios(...fLoc(x, r), x.opts)}</div>`).join("")}
-  <div class="card"><div class="q">補充說明（選填）</div>${nf(...k("fnote"), 3)}</div>
+  <details class="ref" open><summary>回看：階段 7 的培育共識（即時更新）</summary><div data-dyn="stage5"></div></details>` + teamSec + coachSec + `
   <div class="card soft"><div class="q">送出 ${esc(rowPjm(r))} 的培育計畫</div><p class="hint">確認階段 7、8 都討論完了，再按送出。送出後，facilitator 會在大螢幕呈現全班培育計畫的概況。</p>
     <p class="row"><button class="btn" id="sendPlan">送出培育計畫</button><span class="saved" id="planMsg"></span></p></div>` + '<div id="bonusHost"></div>' + foot;
 }

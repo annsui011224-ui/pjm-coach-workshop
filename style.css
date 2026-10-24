@@ -224,3 +224,15 @@ textarea.locked { background: var(--warn); opacity: .85; cursor: not-allowed; }
 @media (max-width: 900px) { .p-survey { grid-template-columns: 1fr; } }
 
 .p-tip { background: var(--warn); border-radius: 18px; padding: 14px 22px; margin: 14px 0 8px; font-size: clamp(18px, 2vw, 32px); line-height: 1.6; }
+
+/* 可行性檢查：小組題與教練個人題分區 */
+.sec { border-radius: 22px; padding: 4px 14px 12px; margin: 16px 0; }
+.sec-team { background: var(--soft); }
+.sec-coach { background: color-mix(in srgb, var(--accent) 10%, var(--bg)); border: 3px solid var(--accent); }
+.sechead { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0 6px; }
+.p-sec { border-radius: 22px; padding: 6px 22px 12px; margin: 14px 0; background: var(--soft); }
+.p-sec-coach { background: color-mix(in srgb, var(--accent) 10%, var(--bg)); border: 4px solid var(--accent); }
+.p-sechead { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: clamp(16px, 1.7vw, 28px); font-weight: 700; margin: 10px 0 2px; }
+.p-tag { background: var(--brand); color: var(--brand-ink); border-radius: 999px; padding: 2px 16px; }
+.p-tag.coach { background: var(--accent); color: #fff; }
+.p-tip-coach { background: color-mix(in srgb, var(--accent) 22%, var(--bg)); }
