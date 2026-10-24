@@ -101,7 +101,7 @@ function viewRegister() {
   const cur = me();
   const opts = Object.keys(byUnit).map((u) => `<optgroup label="${esc(u)}">` + byUnit[u].map((p) => `<option value="${p.id}" ${cur?.id === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("") + `</optgroup>`).join("");
   return `
-  <h1>歡迎來到 PJM 教練團交流會 ✨</h1>
+  ${sprigSvg()}<h1>歡迎來到 PJM 教練團交流會</h1>
   <p class="sub">先完成報到，我們會告訴你，當天你在工作坊裡扮演什麼角色。</p>
   <div class="card">
     <div class="q">① 你是誰？</div>
@@ -163,7 +163,7 @@ function viewCard() {
     : `<div style="text-align:center"><button class="btn" id="cardBack">回到目前階段</button></div>`;
   return `
   <div class="card soft rolecard">
-    <div class="emoji">${a.emoji}</div>
+    ${sprigSvg()}
     <div class="pill">已完成報到</div>
     <div class="rt">${esc(m.name)}，你是「${a.title}」</div>
     <div class="rolechips">${rs.map((r) => `<span class="pill">${roleLabel(r)}</span>`).join("")}${m.unit ? `<span class="pill warn">${esc(m.unit)}</span>` : ""}</div>
@@ -619,7 +619,7 @@ function bind11() {
 
 // ---------- 階段：滿意度問卷（匿名） ----------
 function v12() {
-  if (ls.get("pjm_survey_done") === "1") return ph(STAGE[12].title, "") + `<div class="card soft rolecard"><div class="emoji">🙏</div><div class="rt">謝謝你的回饋！</div><p class="hint">你的答案已匿名送出。</p></div>`;
+  if (ls.get("pjm_survey_done") === "1") return ph(STAGE[12].title, "") + `<div class="card soft rolecard">${sprigSvg()}<div class="rt">謝謝你的回饋！</div><p class="hint">你的答案已匿名送出。</p></div>`;
   const rating = (q) => `<div class="card"><div class="q">${esc(q.q)}</div>
     <div class="row" style="justify-content:space-between;margin-top:8px">${[1, 2, 3, 4, 5].map((n) => `<label class="opt" style="flex:1;justify-content:center;min-width:52px"><input type="radio" name="sv_${q.k}" value="${n}"><span>${n}</span></label>`).join("")}</div>
     <div class="row hint" style="justify-content:space-between;margin-top:4px"><span>1 非常不同意</span><span>5 非常同意</span></div></div>`;

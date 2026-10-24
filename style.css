@@ -1,13 +1,18 @@
 :root {
-  --bg: #f6f3ee; --card: #ffffff; --ink: #1f2a33; --muted: #6b7680; --line: #e3ded5;
-  --brand: #0f6b66; --brand-ink: #ffffff; --accent: #e8664a; --soft: #e5f1ef; --warn: #fff1d6;
-  --radius: 14px;
+  --bg: #f5f5f0; --card: #fbfbf8; --ink: #2e3a33; --muted: #6c7a71; --line: #d9ddd3;
+  --brand: #385a4c; --brand-ink: #ffffff; --accent: #b8643c; --soft: #e6ede7; --warn: #f1ecd9;
+  --radius: 22px;
+  --serif: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #14191d; --card: #1d252b; --ink: #eef1f3; --muted: #9aa6af; --line: #303a42;
-    --brand: #3fb5ac; --brand-ink: #0c1a19; --accent: #ff8a70; --soft: #1b3331; --warn: #3a2f17;
+    --bg: #151b18; --card: #1d2621; --ink: #eaf0ea; --muted: #9db0a3; --line: #33423a;
+    --brand: #8fc2a7; --brand-ink: #10201a; --accent: #e19a6e; --soft: #22322a; --warn: #3a3320;
   }
+}
+:root[data-theme="dark"] {
+  --bg: #151b18; --card: #1d2621; --ink: #eaf0ea; --muted: #9db0a3; --line: #33423a;
+  --brand: #8fc2a7; --brand-ink: #10201a; --accent: #e19a6e; --soft: #22322a; --warn: #3a3320;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif; }
@@ -125,3 +130,31 @@ table.t th, table.t td { border-bottom: 1px solid var(--line); padding: 6px 8px;
 .stageRight:fullscreen { display: flex; flex-direction: column; height: 100vh; padding: 2vh 3vw 9vh; overflow: hidden; }
 .stageRight:fullscreen #projBody { flex: 1; min-height: 0; overflow: hidden; }
 .stageRight:fullscreen #projInner { transform-origin: top left; }
+
+/* ---- 植物系風格覆蓋 ---- */
+h1, h2, .brand, .rolecard .rt, .p-h1, .p-h2, .p-big { font-family: var(--serif); }
+h1 { font-weight: 900; color: var(--ink); }
+h2 { font-weight: 700; }
+main.wrap:not(.wide) h1 { text-align: center; font-size: 28px; margin-top: 28px; }
+main.wrap:not(.wide) .sub { text-align: center; }
+.btn, a.btn { border-radius: 999px; padding: 12px 30px; font-family: var(--serif); font-weight: 600; letter-spacing: .04em; }
+button.btn.ghost, a.btn.ghost { border-width: 1.5px; }
+.card { border-radius: var(--radius); box-shadow: 0 1px 0 #ffffff80 inset; }
+.card.soft { background: var(--soft); }
+textarea, input[type=text], input[type=password], select { border-radius: 16px; background: var(--card); }
+.opt { border-radius: 28px; padding: 12px 18px; background: var(--card); }
+.opt:has(input:checked) { border-color: var(--brand); background: var(--soft); }
+.chip { font-family: inherit; }
+.pic { border-radius: 18px; }
+.bar { height: 14px; border-radius: 99px; }
+.bar > i { border-radius: 99px; }
+.pill { background: var(--soft); color: var(--brand); }
+.stagebtn { border-radius: 16px; }
+.dot { background: var(--brand); }
+header.top { background: var(--bg); }
+/* 植物插圖與柔光 */
+.sprig { display: block; margin: 8px auto 0; width: 150px; height: 180px; background: radial-gradient(circle at 50% 52%, #8fb99a55 0%, #8fb99a22 45%, transparent 70%); }
+.rolecard { padding: 18px 16px 28px; }
+.rolecard .rt { font-size: 24px; font-weight: 900; }
+
+h1, h2, .rolecard .rt, .p-h1, .p-lead, .wait { text-wrap: balance; }

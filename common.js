@@ -211,3 +211,19 @@ const fLoc = (q, r) => (q.perCoach ? ["coach", String(r.row_id), 8, q.f] : ["row
 
 // PDF 內頁配圖用：已逐張檢視，畫面中沒有清楚的人臉或動物臉（封面不受此限制）
 const INTERIOR_IMAGES = ["images/p985628.jpg","images/p36958408.jpg","images/p33414459.jpg","images/p1792626.jpg","images/p9696711.jpg","images/p11948604.jpg","images/p14978029.jpg","images/p18994151.jpg","images/p38652687.jpg","images/p6114013.jpg","images/p33225977.jpg","images/p9606482.jpg","images/p19984101.jpg","images/p13185335.jpg","images/p20040806.jpg","images/p1609512.jpg","images/p39739424.jpg","images/p32017425.jpg","images/p13625479.jpg","images/p37368470.jpg","images/p18748163.jpg","images/p4715645.jpg","images/p12815097.jpg","images/p35526447.jpg","images/p9606891.jpg","images/p6147381.jpg","images/p12585936.jpg","images/p31679274.jpg","images/p5549239.jpg","images/p33927801.jpg","images/p338504.jpg","images/p3763830.jpg","images/p8606805.jpg","images/p22608567.jpg","images/p8301408.jpg","images/p39977067.jpg","images/p29709894.jpg","images/p5220093.jpg","images/p39999216.jpg"];
+
+// 原創的蕨類小枝插圖（柔和綠色，亮暗主題都適用）
+function sprigSvg() {
+  const cols = ["#7fae8d", "#9cc4a2", "#b6d6b0", "#6d9c7e"];
+  let leaves = "";
+  for (let k = 0; k < 15; k++) {
+    const t = k / 14, x = 100 + 24 * Math.sin(t * 2.6) - 6 * t, y = 222 - t * 190;
+    const s = 1.25 - t * 0.55;
+    [[-1, 48], [1, -48]].forEach(([side, rot], j) => {
+      const a = rot + (k % 2 ? 8 : -6);
+      leaves += '<path transform="translate(' + (x + side * 3).toFixed(1) + " " + y.toFixed(1) + ") rotate(" + a + ") scale(" + s.toFixed(2) + ')" d="M0,0 C-8,-7 -10,-19 0,-23 C10,-19 8,-7 0,0Z" fill="' + cols[(k + j) % 4] + '" opacity="0.92"/>';
+    });
+  }
+  leaves += '<path transform="translate(' + (100 + 24 * Math.sin(2.6) - 6) + ' 30) rotate(8) scale(0.8)" d="M0,0 C-8,-7 -10,-19 0,-23 C10,-19 8,-7 0,0Z" fill="#9cc4a2"/>';
+  return '<svg class="sprig" viewBox="0 0 200 240" role="img" aria-label="蕨類小枝插圖"><path d="M100 236 C108 190 118 120 120 30" stroke="#4a5d51" stroke-width="2.2" fill="none" stroke-linecap="round"/>' + leaves + "</svg>";
+}
