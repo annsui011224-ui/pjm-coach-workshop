@@ -169,17 +169,24 @@ function project(i) {
   o.querySelector("#pClose").onclick = close;
 }
 
+// 每位參與者在「讓好行動更有力量」階段各自寫下的嘉賓回饋筆記
+function guestNotes() {
+  return D.notes.filter((n) => n.scope === "person" && n.stage === 9 && n.field === "guest_note" && (n.value || "").trim())
+    .map((n) => ({ name: (D.people.find((p) => p.id === +n.scope_key) || {}).name || "?", text: n.value.trim(), at: n.updated_at }))
+    .sort((a, b) => (a.at < b.at ? 1 : -1));
+}
+
 // ---- 階段 9 / 帶走 ----
 function pOut() {
   const pane = document.getElementById("pane");
   pane.innerHTML = `
   <h2>重要嘉賓回饋</h2>
-  <div class="card"><b>現場筆記（參與者共同記錄）</b><div style="white-space:pre-wrap;margin-top:6px">${esc(nv("all", "all", 9, "guest_notes")) || "<span class='hint'>尚無內容</span>"}</div></div>
+  <div class="card"><b>現場筆記（每人一則，共 ${guestNotes().length} 則）</b>${guestNotes().length ? '<div style="margin-top:8px;display:grid;gap:8px">' + guestNotes().map((n) => '<div class="card" style="margin:0;padding:10px 14px"><span class="hint">' + esc(n.name) + '</span><div style="white-space:pre-wrap">' + esc(n.text) + "</div></div>").join("") + "</div>" : "<p class='hint' style='margin:6px 0 0'>尚無內容</p>"}</div>
   <div class="card"><b>確認後放入 PDF 的嘉賓回饋</b><p class="hint">檢查無誤後，整理在這裡並儲存，參與者的階段 7 畫面與 PDF 才會出現這段文字。</p>
     <textarea id="gf" rows="8">${esc(nv("all", "all", 9, "guest_final"))}</textarea>
     <p class="row"><button class="btn" id="gfSave">儲存並發布</button><button class="btn ghost" id="gfCopy">以現場筆記為草稿</button></p></div>`;
   document.getElementById("gfSave").onclick = async () => { await rpc("pjm_admin_set_note", { sc: "all", sk: "all", st: 9, f: "guest_final", v: document.getElementById("gf").value }); toast("已發布"); load(true); };
-  document.getElementById("gfCopy").onclick = () => { document.getElementById("gf").value = nv("all", "all", 9, "guest_notes"); };
+  document.getElementById("gfCopy").onclick = () => { document.getElementById("gf").value = guestNotes().map((n) => "・" + n.text.replace(/\n+/g, " ")).join("\n"); };
 }
 
 start();

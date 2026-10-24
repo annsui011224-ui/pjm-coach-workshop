@@ -583,8 +583,8 @@ function bind8() {
 function v9() {
   return ph(STAGE[9].title, "請看大螢幕：全班的培育計畫概況，與重要嘉賓的現場回饋") + `
   <div data-dyn="summaries"></div>
-  <h2>重要嘉賓的回饋筆記</h2>
-  <div class="card"><p class="hint">嘉賓分享時，想記下什麼都可以寫在這裡，全場共用一份。不需要每個人都寫。</p>${nf("all", "all", 9, "guest_notes", 8, "把聽到的回饋記在這裡…")}</div>` + foot;
+  <h2>我的筆記：重要嘉賓的回饋</h2>
+  <div class="card"><p class="hint">嘉賓分享時，把你聽到的回饋記在這裡。每個人各自一份，不會互相覆蓋，facilitator 會在後台彙整。不需要每個人都寫。</p>${nf("person", String(S.meId), 9, "guest_note", 8, "把聽到的回饋記在這裡…")}</div>` + foot;
 }
 
 function v10() {

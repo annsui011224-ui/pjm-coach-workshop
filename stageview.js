@@ -103,9 +103,9 @@ function projFeasible() {
 }
 
 function projEnergize() {
-  const st = dashStats(D.roster, nv, false), notes = nv("all", "all", 9, "guest_notes");
+  const st = dashStats(D.roster, nv, false), notes = guestNotes();
   return pH1("讓好行動更有力量") + `<p class="p-sub" style="margin:0 0 8px">全班培育計畫概況（已送出 ${st.sent}／${st.total} 組培育小組）</p>` + dashHtml(st, true) +
-    `<h2 class="p-h2">請重要嘉賓給予回饋</h2>` + (notes ? `<div class="p-card"><div class="p-note">${nl2br(notes)}</div></div>` : `<p class="p-sub">（嘉賓分享時，參與者會在電腦上共同記錄）</p>`);
+    `<h2 class="p-h2">請重要嘉賓給予回饋</h2>` + (notes.length ? `<p class="p-sub">已收到 ${notes.length} 則回饋筆記，以下是最新的幾則</p><div class="p-grid">${notes.slice(0, 6).map((n) => `<div class="p-card"><div class="p-note" style="display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden">${esc(n.text)}</div></div>`).join("")}</div>` : `<p class="p-sub">（嘉賓分享時，參與者會在電腦上各自記錄筆記）</p>`);
 }
 
 function projTakeaway() {
