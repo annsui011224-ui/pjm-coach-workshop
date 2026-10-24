@@ -37,10 +37,10 @@ const participants = () => D.people.filter((p) => p.unit);
 const regOf = (id) => D.regs.find((r) => r.person_id === id);
 
 function draw() {
-  const tabs = [["stage", "階段控制"], ["reg", "行前準備狀況"], ["seat", "跨產品分組"], ["teams", "培育小組"], ["share", "小組分享（投影）"], ["dash", "培育計畫儀表板"], ["out", "嘉賓回饋整理"], ["data", "資料管理"]];
+  const tabs = [["stage", "階段控制"], ["reg", "行前準備狀況"], ["seat", "跨產品分組"], ["teams", "培育小組"], ["share", "小組分享（投影）"], ["dash", "培育計畫儀表板"], ["photos", "工作坊剪影"], ["out", "嘉賓回饋整理"], ["data", "資料管理"]];
   $app.innerHTML = `<div class="row" style="margin:16px 0">${tabs.map(([k, l]) => `<button class="chip ${tab === k ? "on" : ""}" data-tab="${k}">${l}</button>`).join("")}</div><div id="pane"></div>`;
   $app.querySelectorAll("[data-tab]").forEach((b) => (b.onclick = () => { tab = b.dataset.tab; draw(); }));
-  ({ stage: pStage, reg: pReg, seat: pSeat, teams: pTeams, share: pShare, dash: pDash, out: pOut, data: pData })[tab]();
+  ({ stage: pStage, reg: pReg, seat: pSeat, teams: pTeams, share: pShare, dash: pDash, out: pOut, photos: pPhotos, data: pData })[tab]();
 }
 
 // ---- 資料管理：一鍵清除測試資料 ----

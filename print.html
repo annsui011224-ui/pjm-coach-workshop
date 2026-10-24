@@ -59,6 +59,9 @@
   }
   .q4i { display:flex; gap:4px; margin:0 0 4px; }
   .q4i svg { width:30px; height:36px; display:block; }
+  .phbig img { display:block; width:100%; max-height:118mm; object-fit:cover; border-radius:10px; margin-bottom:8px; break-inside:avoid; }
+  .phgrid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .phgrid img { width:100%; height:58mm; object-fit:cover; border-radius:10px; break-inside:avoid; }
   .dash .grid2 { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
   .dash .card { border:1px solid var(--line); border-radius:12px; padding:10px 12px; background:#fff; margin:6px 0; break-inside:avoid; }
   .dash .bar { height:9px; background:var(--line); border-radius:99px; overflow:hidden; }
@@ -172,6 +175,16 @@
   }
   const gf = nv("all", "all", 9, "guest_final");
   if (gf) h += pageOf("<h2>重要嘉賓的回饋</h2><p>" + nl2br(gf) + "</p>", 1);
+  // 工作坊剪影：大合照＋有拍到自己這一組的照片
+  let allPhotos = []; try { const r = await sb.from("pjm_photos").select("*").order("id"); allPhotos = r.data || []; } catch {}
+  const mine = allPhotos.filter((x) => x.tags.includes("all") || (me.seat2 && x.tags.includes(me.seat2)));
+  const purl = (pth) => SUPABASE_URL + "/storage/v1/object/public/pjm-photos/" + pth;
+  if (mine.length) {
+    const big = mine.filter((x) => x.tags.includes("all")), grp = mine.filter((x) => !x.tags.includes("all"));
+    h += '<div class="page">' + head() + '<h1 class="pt">工作坊剪影</h1><p class="sub">' + EVENT + " " + DATE + "</p>" +
+      (big.length ? '<h2>大合照</h2><div class="phbig">' + big.map((x) => '<img src="' + esc(purl(x.path)) + '" alt="">').join("") + "</div>" : "") +
+      (grp.length ? "<h2>" + (me.seat2 ? teamName(me.seat2) + " 的照片" : "小組照片") + '</h2><div class="phgrid">' + grp.map((x) => '<img src="' + esc(purl(x.path)) + '" alt="">').join("") + "</div>" : "") + "</div>";
+  }
   doc.innerHTML = h;
 })();
 </script>
