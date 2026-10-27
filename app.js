@@ -475,7 +475,7 @@ function bind4() {
 function v5() {
   const g = me().seat2;
   const mem = S.people.filter((p) => g && p.seat2 === g).map((p) => p.name).join("、");
-  return ph(STAGE[5].title, "和小組夥伴一起討論，共編一份答案") + (g ? `
+  return ph(STAGE[5].title, "和小組一起討論，並指派一名成員送出答案。") + (g ? `
   <div class="card"><div class="pill warn">你的小組：${teamName(g)}</div> <span class="hint">${esc(mem)}</span>
     <div class="q" style="margin-top:12px">剛才 KS 分享的經驗中，有沒有哪一個做法，即使我的資源有限，也有機會嘗試？</div>
     <div style="background:var(--warn);border-radius:14px;padding:8px 14px;margin:8px 0">${WRITER_TIP}</div>
@@ -763,12 +763,12 @@ const DYN = {
   },
   gallery() {
     const g = me().seat2;
-    const mem = S.people.filter((p) => p.id !== S.meId && g && p.seat2 === g);
+    const mem = S.people.filter((p) => g && p.seat2 === g).sort((a, b) => (b.id === S.meId) - (a.id === S.meId));
     if (!g) return `<p class="hint">Facilitator 設定好小組後，會在這裡看到同組夥伴的圖片和心聲。</p>`;
-    if (!mem.length) return `<p class="hint">同組夥伴的內容會顯示在這裡。</p>`;
+    if (mem.length < 2) return `<p class="hint">同組夥伴的內容會顯示在這裡。</p>`;
     return mem.map((p) => {
       const f = S.future.get(p.id); if (!f) return `<div class="card"><span class="who">${esc(p.name)}</span> <span class="hint">還在選圖…</span></div>`;
-      return `<div class="card"><div class="future">${f.image_url ? `<img src="${esc(f.image_url)}" alt="">` : ""}<div class="tx"><span class="who">${esc(p.name)}</span><br>${esc(futureLead(pjmNamesOf(S.roster, p.name)))}，我就能${esc(f.fill1 || "…")}；即使會遇到挑戰，我仍願意${esc(f.fill2 || "…")}，因為${esc(f.fill3 || "…")}。</div></div></div>`;
+      return `<div class="card"><div class="future">${f.image_url ? `<img src="${esc(f.image_url)}" alt="">` : ""}<div class="tx"><span class="who">${esc(p.name)}${p.id === S.meId ? "（你）" : ""}</span><br>${esc(futureLead(pjmNamesOf(S.roster, p.name)))}，我就能${esc(f.fill1 || "…")}；即使會遇到挑戰，我仍願意${esc(f.fill2 || "…")}，因為${esc(f.fill3 || "…")}。</div></div></div>`;
     }).join("");
   },
   teamInv,
