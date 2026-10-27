@@ -357,7 +357,7 @@ function v2() {
   <div class="card"><div class="q">你選的圖片</div><p class="hint">點圖片可以全螢幕放大，和組員分享你為什麼選這張。</p>
     <img class="bigpic" data-full="${esc(f.image_url)}" src="${esc(f.image_url)}" alt="">
     <p><button class="btn ghost" id="repick">重新選擇</button></p></div>
-  ${shareCard()}<div data-dyn="mates2"></div><div data-dyn="ice"></div>`;
+  <div data-dyn="mates2"></div>${shareCard()}<div data-dyn="ice"></div>`;
   return ph(STAGE[2].title, "") + nameFixCard() + `
   <div class="card"><div class="q">請選一張圖片，${esc(pickLead(pjmNamesOf(S.roster, me().name)))}，對你的好處是什麼？</div>
     <p class="hint">點選圖片可以全螢幕放大。選好後按「送出」，再和小組成員分享你的選擇。</p>
