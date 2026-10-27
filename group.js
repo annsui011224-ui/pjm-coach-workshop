@@ -7,7 +7,7 @@ const pairKey = (a, b) => (a < b ? a + "|" + b : b + "|" + a);
 function relatedPairs(rows) {
   const s = new Set();
   rows.forEach((r) => {
-    const m = [...new Set([r.coach, r.direct_mgr, r.dept_mgr, r.pjm_mgr].filter(Boolean))];
+    const m = [...new Set([r.coach, r.direct_mgr, r.dept_mgr, r.dept_mgr2, r.pjm_mgr].filter(Boolean))];
     for (let i = 0; i < m.length; i++) for (let j = i + 1; j < m.length; j++) s.add(pairKey(m[i], m[j]));
   });
   return s;

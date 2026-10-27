@@ -176,18 +176,18 @@ function buildRoster(rows, trainees) {
   return out;
 }
 // 某人相關的名單列（每一列 = 一組「教練 ↔ 新手 PJM」）
-const rosterRowsOf = (roster, name) => roster.filter((r) => [r.coach, r.direct_mgr, r.dept_mgr, r.pjm_mgr].includes(name));
+const rosterRowsOf = (roster, name) => roster.filter((r) => [r.coach, r.direct_mgr, r.dept_mgr, r.dept_mgr2, r.pjm_mgr].includes(name));
 const pjmNamesOf = (roster, name) => rosterRowsOf(roster, name).map((r) => (r.pjm_name || "").trim()).filter(Boolean);
 
 // 名單中的一列 = 一位新手 PJM 的培育小組
 const rowPjm = (r) => (r.pjm_name || "").trim() || "新手 PJM";
 const rowTitle = (r) => `${r.unit}｜${rowPjm(r)}（${r.coach} 教練）`;
-const rowPeople = (r) => [...new Set([r.coach, r.pjm_mgr, r.direct_mgr, r.dept_mgr].filter(Boolean))];
+const rowPeople = (r) => [...new Set([r.coach, r.pjm_mgr, r.direct_mgr, r.dept_mgr, r.dept_mgr2].filter(Boolean))];
 
 // 階段 7 第 4 題：這一列裡的每位成員「身為誰的什麼角色，要做…」
 function q4Fields(r) {
   const pjm = rowPjm(r);
-  const entries = [["coach", r.coach, pjm, "教練"], ["pjm_mgr", r.pjm_mgr, pjm, "主管"], ["direct_mgr", r.direct_mgr, r.coach, "直接主管"], ["dept_mgr", r.dept_mgr, r.coach, "部級主管"]].filter((e) => e[1]);
+  const entries = [["coach", r.coach, pjm, "教練"], ["pjm_mgr", r.pjm_mgr, pjm, "主管"], ["direct_mgr", r.direct_mgr, r.coach, "直接主管"], ["dept_mgr", r.dept_mgr, r.coach, "部級主管"], ["dept_mgr", r.dept_mgr2, r.coach, "部級主管"]].filter((e) => e[1]);
   const byName = new Map(), roleKeys = new Map();
   entries.forEach(([rk, name, target, role]) => {
     const m = byName.get(name) || new Map(); byName.set(name, m);
@@ -225,7 +225,7 @@ function roleChip(text, roles, on, small) {
 }
 // 某人在某一列（某個培育小組）裡扮演的角色
 function rowRolesOf(r, name) {
-  return [["coach", r.coach], ["pjm_mgr", r.pjm_mgr], ["direct_mgr", r.direct_mgr], ["dept_mgr", r.dept_mgr]].filter(([, n]) => n === name).map(([k]) => k);
+  return [["coach", r.coach], ["pjm_mgr", r.pjm_mgr], ["direct_mgr", r.direct_mgr], ["dept_mgr", r.dept_mgr], ["dept_mgr", r.dept_mgr2]].filter(([, n]) => n === name).map(([k]) => k);
 }
 
 // 原創植物插圖：每個角色一種，主色調各不相同（綠、藍、金黃、紫、粉紅）

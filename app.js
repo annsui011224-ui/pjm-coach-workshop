@@ -288,7 +288,7 @@ function v1() {
 const pjmLabel = () => { const n = pjmNamesOf(S.roster, me().name); return n.length ? n.join("、") : "新手 PJM"; };
 
 // 名單中的一列 = 一位教練；他可能帶多位新手 PJM
-const myRawRows = (name) => S.rows.filter((r) => [r.coach, r.direct_mgr, r.dept_mgr, r.pjm_mgr].includes(name));
+const myRawRows = (name) => S.rows.filter((r) => [r.coach, r.direct_mgr, r.dept_mgr, r.dept_mgr2, r.pjm_mgr].includes(name));
 function rowSlotsHtml(rows, myName) {
   return rows.map((r) => {
     const ts = S.trainees.filter((t) => t.roster_id === r.id);

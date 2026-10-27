@@ -112,7 +112,7 @@ function pTeams() {
   const card = (r) => {
     const id = String(r.id);
     const roles = {};
-    [["coach", r.coach], ["pjm_mgr", r.pjm_mgr], ["direct_mgr", r.direct_mgr], ["dept_mgr", r.dept_mgr]].forEach(([k, n]) => { if (n) (roles[n] ||= []).push(roleLabel(k)); });
+    [["coach", r.coach], ["pjm_mgr", r.pjm_mgr], ["direct_mgr", r.direct_mgr], ["dept_mgr", r.dept_mgr], ["dept_mgr", r.dept_mgr2]].forEach(([k, n]) => { if (n) (roles[n] ||= []).push(roleLabel(k)); });
     const members = Object.keys(roles);
     const inv = D.inv.filter((i) => i.trainee_id === r.id && i.has_obs !== null).length;
     const q = ["q1", "q2", "q3", "q4", "q5"].filter((x) => nv("row", id, 7, x)).length;
