@@ -217,9 +217,9 @@ function radios(scope, key, stage, field, opts) {
   const k = nkey(scope, key, stage, field);
   return `<div class="opts">` + opts.map((o) => `<label class="opt"><input type="radio" name="${esc(k)}" data-nr="${esc(k)}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join("") + `</div>`;
 }
-function checks(scope, key, stage, field, opts) {
+function checks(scope, key, stage, field, opts, max) {
   const k = nkey(scope, key, stage, field);
-  return `<div class="grid2" style="grid-template-columns:repeat(auto-fill,minmax(190px,1fr))">` + opts.map((o) => `<label class="opt"><input type="checkbox" data-nc="${esc(k)}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join("") + `</div>`;
+  return `<div class="grid2" style="grid-template-columns:repeat(auto-fill,minmax(190px,1fr))">` + opts.map((o) => `<label class="opt"><input type="checkbox" data-nc="${esc(k)}"${max ? ` data-max="${max}"` : ""} value="${esc(o)}"><span>${esc(o)}</span></label>`).join("") + `</div>`;
 }
 async function saveNote(k, value) {
   const [scope, scope_key, stage, field] = k.split("|");
@@ -237,6 +237,8 @@ document.addEventListener("change", (e) => {
   if (el.dataset?.nr) saveNote(el.dataset.nr, el.value);
   if (el.dataset?.nc) {
     const k = el.dataset.nc;
+    const mx = +el.dataset.max || 0;
+    if (mx && el.checked && [...document.querySelectorAll("[data-nc]")].filter((x) => x.dataset.nc === k && x.checked).length > mx) { el.checked = false; toast("最多選 " + mx + " 個"); return; }
     const v = [...document.querySelectorAll("[data-nc]")].filter((x) => x.dataset.nc === k && x.checked).map((x) => x.value).join("||");
     saveNote(k, v);
   }
@@ -355,7 +357,7 @@ function v2() {
   <div class="card"><div class="q">你選的圖片</div><p class="hint">點圖片可以全螢幕放大，和組員分享你為什麼選這張。</p>
     <img class="bigpic" data-full="${esc(f.image_url)}" src="${esc(f.image_url)}" alt="">
     <p><button class="btn ghost" id="repick">重新選擇</button></p></div>
-  ${shareCard()}<div data-dyn="ice"></div>`;
+  ${shareCard()}<div data-dyn="mates2"></div><div data-dyn="ice"></div>`;
   return ph(STAGE[2].title, "") + nameFixCard() + `
   <div class="card"><div class="q">請選一張圖片，${esc(pickLead(pjmNamesOf(S.roster, me().name)))}，對你的好處是什麼？</div>
     <p class="hint">點選圖片可以全螢幕放大。選好後按「送出」，再和小組成員分享你的選擇。</p>
@@ -602,7 +604,7 @@ function v7() {
   <div class="card" style="background:var(--warn);border-color:transparent">${WRITER_TIP}</div>
   <details class="ref" open><summary>大家剛才各自的盤點</summary><div data-dyn="teamInv"></div></details>
   <div class="card"><div class="q">① 三個月後，希望 ${nm} 能獨立做到什麼？</div><p class="hint">請描述一個可觀察的工作行為，而不是只寫「提升溝通能力」。</p>${nf(...k("q1"), 3)}</div>
-  <div class="card"><div class="q">② 本次優先關注 ${nm} 的哪一項 PJM 能力？</div>${checks(...k("q2"), ABILITIES)}</div>
+  <div class="card"><div class="q">② 本次優先關注 ${nm} 的哪一項 PJM 能力？</div><p class="hint">複選，最多選 2 個</p>${checks(...k("q2"), ABILITIES, 2)}</div>
   <div class="card"><div class="q">③ 目前的培育起點</div>${radios(...k("q3"), Q5.q3)}</div>
   <div class="card"><div class="q">④ 下一步要做什麼？</div><p class="hint">請選擇一個真實工作情境，並明確分工。</p>
     ${nf(...k("q4"), 3, "真實工作情境與下一步")}
@@ -759,6 +761,16 @@ const DYN = {
         ? "<div><b>已有具體觀察</b>　優先能力：" + esc((i.abilities || []).join("、") || "—") + "</div><div><b>三個月後期待：</b>" + nl2br(i.expectation || "—") + "</div>"
         : "<div><b>目前還沒有具體觀察</b></div><div><b>了解 PJM 的機會：</b>" + nl2br(i.opportunities || "—") + "</div>";
       return '<div class="card" style="margin:8px 0"><div class="row" style="justify-content:space-between">' + roleChip(p.name, rowRolesOf(r, p.name), s === "已完成", true) + '<span class="pill ' + (s === "已完成" ? "" : "warn") + '">' + s + "</span></div>" + (detail ? '<div style="margin-top:6px">' + detail + "</div>" : "") + "</div>";
+    }).join("");
+  },
+  mates2() {
+    const g = me().seat2; if (!g) return "";
+    const mem = S.people.filter((p) => p.seat2 === g && p.id !== S.meId && !p.absent);
+    if (!mem.length) return "";
+    return "<h2>" + esc(teamName(g)) + " 夥伴的圖片</h2>" + mem.map((p) => {
+      const f = S.future.get(p.id);
+      if (!f || !f.image_submitted) return `<div class="card"><span class="who">${esc(p.name)}</span> <span class="hint">還在選圖…</span></div>`;
+      return `<div class="card"><div class="future"><img class="thumb" data-full="${esc(f.image_url)}" src="${esc(f.image_url)}" alt=""><div class="tx"><span class="who">${esc(p.name)}</span> <span class="hint">已選好 ✓ 點圖片可放大</span></div></div></div>`;
     }).join("");
   },
   gallery() {
